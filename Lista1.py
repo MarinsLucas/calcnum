@@ -10,6 +10,7 @@ def cooling(T0, k, T_s, t_end, dt, npoints): # Explicit Euler, Implicit Euler an
     for i in range(npoints-1):
         ''' T[i+1] = dt*(k*(T[i] - T_s)) + T[i] ''' # Explicit Euler
         ''' T[i+1] = (T[i] - k * dt * T_s)/(1-k*dt) ''' # Implicit Euler
+        T[i+1] = T[i] + dt*k*(T[i] + (1/2)*dt*k*(T[i] - T_s) - T_s) # Crank-Nicolson
         
     return T
 
@@ -33,7 +34,7 @@ def main():
 
     tt = np.linspace(t_ini, t_end, 200)
     plt.plot(tt, ((T0 - T_s)*np.exp(-k*tt)) + T_s, '--')
-    plt.legend(['Explicit Euler', 'Exact'])
+    plt.legend(['Crank-Nicolson', 'Exact'])
 
     plt.xlabel('tempo (s)')
     plt.ylabel('temperatura (C)')
