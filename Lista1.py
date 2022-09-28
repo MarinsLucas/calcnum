@@ -1,38 +1,46 @@
-from telnetlib import TM
 import matplotlib.pyplot as plt
 import numpy as np
 import cmath as math
 
 
-def resfriamentoNewtonExata(thetaInicial, thetaM, k, tt):
-    return ((thetaInicial - thetaM)*np.exp(-k*tt)) + thetaM
+def cooling(T0, k, T_s, t_end, dt, theta, npoints):
+    T = np.zeros(npoints)
+    T[0] = T0
+    for i in range(npoints-1):
+        T[i+1] = (1.0 - k*dt*(1.0-theta))/(1.0 + k*dt*theta) * \
+            T[i] + (k*dt*(1.0-theta)*T_s)/(1.0 + k*dt*theta)
+    return T
 
 
-refin = 10
-erro = np.zeros(refin)
-vetorDeltaT = np.zeros(refin)
-condicaoInicial = 99
-coeficienteDifusao = 0.358
-tf = 100.0
-ti = 0.0
-T_s = 27
+def main():
+    T0 = 99
+    k = 0.0358
+    T_s = 27
+    t_ini = 0
+    t_end = 100
+    refin = 5
 
-for k in range(0, refin):
+    for it in range(0, refin):
+        npoints = 4**(it+1)+1
+        dt = (t_end-t_ini)/(npoints-1)
+        ''' T, t = cooling(T0, k, T_s, t_end, dt, 0, npoints)
+        plt.plot(t, T, '-*')
+        T, t = cooling(T0, k, T_s, t_end, dt, 0.5, npoints)
+        plt.plot(t, T, '-o') '''
+        t = np.linspace(t_ini,t_end,npoints)
+        T = cooling(T0, k, T_s, t_end, dt, 1, npoints)
+        plt.plot(t, T, '-^')
 
-    quantPontos = 4**(k+1)+1
-    dt = (tf-ti)/(quantPontos - 1)
+        tt = np.linspace(t_ini, t_end, 200)
+        plt.plot(tt, ((T0 - T_s)*np.exp(-k*tt)) + T_s, '--')
+        plt.legend(['Forwards Euller', 'Exact'])
 
-    t = np.linspace(ti, tf, quantPontos)
-    f = np.zeros(quantPontos)
-    
-    f[0] = condicaoInicial
-
-    for n in range(0, quantPontos-1):
-        f[n+1] = (1.0-k*dt*(1.0-0.5))/(1.0+k*dt*-0.5) * \
-        f[n] + (k*dt*(1.0-0.5)*T_s)/(1.0+k*dt*0.5)
-
-        tt = np.linspace(ti, tf, 200)
-
-        plt.plot(t, f, '-*', tt, resfriamentoNewtonExata(condicaoInicial, T_s, coeficienteDifusao, tt))
-        plt.legend(['aproximada', 'exata'])
+        plt.xlabel('tempo (s)')
+        plt.ylabel('temperatura (C)')
+        plt.title('Resfriamento de Newton')
+        plt.grid()
         plt.show()
+
+
+if __name__ == "__main__":
+    main()
