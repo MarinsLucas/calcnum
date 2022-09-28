@@ -3,12 +3,14 @@ import numpy as np
 import cmath as math
 
 
-def cooling(T0, k, T_s, t_end, dt, theta, npoints):
+def cooling(T0, k, T_s, t_end, dt, npoints): # Explicit Euler, Implicit Euler and Crank-Nicolson
+    k *= -1
     T = np.zeros(npoints)
     T[0] = T0
     for i in range(npoints-1):
-        T[i+1] = (1.0 - k*dt*(1.0-theta))/(1.0 + k*dt*theta) * \
-            T[i] + (k*dt*(1.0-theta)*T_s)/(1.0 + k*dt*theta)
+        ''' T[i+1] = dt*(k*(T[i] - T_s)) + T[i] ''' # Explicit Euler
+        ''' T[i+1] = (T[i] - k * dt * T_s)/(1-k*dt) ''' # Implicit Euler
+        
     return T
 
 
@@ -18,28 +20,26 @@ def main():
     T_s = 27
     t_ini = 0
     t_end = 100
-    refin = 5
+    npoints = 10
 
-    for it in range(0, refin):
-        npoints = 4**(it+1)+1
-        dt = (t_end-t_ini)/(npoints-1)
-        ''' T, t = cooling(T0, k, T_s, t_end, dt, 0, npoints)
-        plt.plot(t, T, '-*')
-        T, t = cooling(T0, k, T_s, t_end, dt, 0.5, npoints)
-        plt.plot(t, T, '-o') '''
-        t = np.linspace(t_ini,t_end,npoints)
-        T = cooling(T0, k, T_s, t_end, dt, 1, npoints)
-        plt.plot(t, T, '-^')
+    dt = (t_end-t_ini)/(npoints-1)
+    ''' T, t = cooling(T0, k, T_s, t_end, dt, 0, npoints)
+    plt.plot(t, T, '-*')
+    T, t = cooling(T0, k, T_s, t_end, dt, 0.5, npoints)
+    plt.plot(t, T, '-o') '''
+    t = np.linspace(t_ini,t_end,npoints)
+    T = cooling(T0, k, T_s, t_end, dt, npoints)
+    plt.plot(t, T, '-^')
 
-        tt = np.linspace(t_ini, t_end, 200)
-        plt.plot(tt, ((T0 - T_s)*np.exp(-k*tt)) + T_s, '--')
-        plt.legend(['Forwards Euller', 'Exact'])
+    tt = np.linspace(t_ini, t_end, 200)
+    plt.plot(tt, ((T0 - T_s)*np.exp(-k*tt)) + T_s, '--')
+    plt.legend(['Explicit Euler', 'Exact'])
 
-        plt.xlabel('tempo (s)')
-        plt.ylabel('temperatura (C)')
-        plt.title('Resfriamento de Newton')
-        plt.grid()
-        plt.show()
+    plt.xlabel('tempo (s)')
+    plt.ylabel('temperatura (C)')
+    plt.title('Resfriamento de Newton')
+    plt.grid()
+    plt.show()
 
 
 if __name__ == "__main__":
