@@ -13,7 +13,7 @@ def resfriamentoNewtonExata():
     return(x, y)
 
 def resfriamentoNewtonEulerExplicito(x,y):
-    refin = 5
+    refin = 10
     erro = np.zeros(refin)
     vetorDeltaT = np.zeros(refin)
     condicaoInicial = 99
@@ -29,8 +29,8 @@ def resfriamentoNewtonEulerExplicito(x,y):
         f[0] = condicaoInicial
 
         for i in range(0, quantPontos-1):
-            f[i+1] = (1.0/(1.0+coeficienteDifusao*dt))*f[i] 
-        plt.plot(t,f)
+            f[i+1] = (20.0/(20.0+coeficienteDifusao*dt))*f[i] 
+        plt.plot(t,f, '-*')
         plt.plot(x,y)
         plt.legend(['aproximada','exata'])
         plt.show()
@@ -41,3 +41,4 @@ resfriamentoNewtonEulerExplicito(x,y)
 
 plt.plot(x, y)
 plt.show()
+
