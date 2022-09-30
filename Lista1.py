@@ -17,6 +17,15 @@ def cooling(T0, k, T_m, dt, npoints, type):
 
     return T
 
+def writeData(x, exata, eulere, euleri, cranckn):
+    f = open("datafile.csv", "a")
+    f.write("novoteste;novoteste;novoteste;novoteste;novoteste\n")
+    f.write("TEMPO;EXATA;EULER EXPLÍCITO;EULER IMPLÍCITO;CRANCK NICOLSON\n")
+    for i in range(0, len(exata)):
+        f.write(str(x[i]) + "; " + str(exata[i]) + "; " + str(eulere[i]) + "; " + str(euleri[i]) + "; " + str(cranckn[i]) + '\n')
+
+    f.close()
+
 
 def main():
     #dados do enunciado b)
@@ -25,10 +34,10 @@ def main():
     T_m = 27  #temperatura final
     t_ini = 0 #tempo inicial
     t_end = 100 #tempo final
-    ref = 10
+    ref = 5
     
     for it in range(0, ref):
-        npoints = 2**(it+1)+1
+        npoints = 3**(it+1)+1
 
         t = np.linspace(t_ini, t_end, npoints)
         dt = (t_end-t_ini)/(npoints-1)
@@ -42,6 +51,7 @@ def main():
 
         tt = np.linspace(t_ini, t_end, 200)
         plt.plot(tt, ((T0 - T_m)*np.exp(-k*tt)) + T_m, '--')
+
         plt.legend(['Euler Explícito', 'Euler Implícito',
                 'Crank-Nicolson', 'Exato'])
 
@@ -50,6 +60,9 @@ def main():
         plt.title('Resfriamento de Newton')
         plt.grid()
         plt.show()
+
+        writeData(t, ((T0 - T_m)*np.exp(-k*t)  + T_m)  , cooling(T0, k, T_m, dt, npoints, 1),\
+             cooling(T0, k, T_m, dt, npoints, 2), cooling(T0, k, T_m, dt, npoints, 3))
 
 
 if __name__ == "__main__":
