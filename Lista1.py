@@ -1,32 +1,30 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import cmath as math
 
-
-def cooling(T0, k, T_m, dt, npoints, type):  # Explicit Euler, Implicit Euler and Crank-Nicolson
+def cooling(T0, k, T_m, dt, npoints, type):
     k *= -1
     T = np.zeros(npoints)
     T[0] = T0
     for i in range(npoints-1):
         if type == 1:
-            T[i+1] = dt*(k*(T[i] - T_m)) + T[i]  # Explicit Euler
+            T[i+1] = dt*k*(T[i] - T_m) + T[i]  # Euler Explícito
 
-        if type == 2:
-            T[i+1] = (T[i] - k * dt * T_m)/(1-k*dt)  # Implicit Euler
+        elif type == 2:
+            T[i+1] = (T[i] - k * dt * T_m)/(1-k*dt)  # Euler Implícito
 
-        if (type == 3):  # Crank-Nicolson
-            T[i+1] = T[i] + dt*k * \
-                (T[i] + (1/2)*dt*k*(T[i] - T_m) - T_m)  # Crank-Nicolson
+        elif (type == 3):  
+            T[i+1] = T[i] + dt*k * (T[i] + (1/2)*dt*k*(T[i] - T_m) - T_m)  # Crank-Nicolson
 
     return T
 
 
 def main():
-    T0 = 99
-    k = 0.0358
-    T_m = 27
-    t_ini = 0
-    t_end = 100
+    #dados do enunciado b)
+    T0 = 99   #temperatura inicial
+    k = 0.0358  #coeficiente de transferência de calor 
+    T_m = 27  #temperatura final
+    t_ini = 0 #tempo inicial
+    t_end = 100 #tempo final
     ref = 10
     
     for it in range(0, ref):
