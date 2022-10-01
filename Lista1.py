@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+def calcErro(exata, aprox):
+    return max(abs(exata - aprox))
+
 def cooling(T0, k, T_m, dt, npoints, type):
     k *= -1
     T = np.zeros(npoints)
@@ -14,7 +17,6 @@ def cooling(T0, k, T_m, dt, npoints, type):
 
         elif (type == 3):  
             T[i+1] = T[i] + dt*k * (T[i] + (1/2)*dt*k*(T[i] - T_m) - T_m)  # Crank-Nicolson
-
     return T
 
 def writeData(x, exata, eulere, euleri, cranckn):
@@ -23,30 +25,37 @@ def writeData(x, exata, eulere, euleri, cranckn):
     f.write("TEMPO;EXATA;EULER EXPLÍCITO;EULER IMPLÍCITO;CRANCK NICOLSON\n")
     for i in range(0, len(exata)):
         f.write(str(x[i]) + "; " + str(exata[i]) + "; " + str(eulere[i]) + "; " + str(euleri[i]) + "; " + str(cranckn[i]) + '\n')
-
     f.close()
 
+def eraseData():
+    f = open("datafile.csv", "w")
+    f.write('\0')
+    f.close()
 
 def main():
-    #dados do enunciado b)
-    T0 = 99   #temperatura inicial
-    k = 0.0358  #coeficiente de transferência de calor 
-    T_m = 27  #temperatura final
-    t_ini = 0 #tempo inicial
-    t_end = 100 #tempo final
+    #dados do enunciado 
+    T0 = np.float128(99)   #temperatura inicial
+    k = np.float128(0.0358)  #coeficiente de transferência de calor 
+    T_m = np.float128(27)  #temperatura final
+    t_ini = np.float128(0) #tempo inicial
+    t_end = np.float128(50) #tempo final
     ref = 5
     
+    eraseData()
+
     for it in range(0, ref):
         npoints = 3**(it+1)+1
 
-        t = np.linspace(t_ini, t_end, npoints)
+        t = np.float128(np.linspace(t_ini, t_end, npoints))
         dt = (t_end-t_ini)/(npoints-1)
-
         T = cooling(T0, k, T_m, dt, npoints, 1)
+        print("Exata Eulere: " + str(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T)))
         plt.plot(t, T, '-*')
         T = cooling(T0, k, T_m, dt, npoints, 2)
+        print("Exata Euleri: " + str(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T)))
         plt.plot(t, T, '-o')
         T = cooling(T0, k, T_m, dt, npoints, 3)
+        print("Exata Cranck-Nicolson: " + str(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T)))
         plt.plot(t, T, '-^')
 
         tt = np.linspace(t_ini, t_end, 200)
@@ -63,7 +72,6 @@ def main():
 
         writeData(t, ((T0 - T_m)*np.exp(-k*t)  + T_m)  , cooling(T0, k, T_m, dt, npoints, 1),\
              cooling(T0, k, T_m, dt, npoints, 2), cooling(T0, k, T_m, dt, npoints, 3))
-
 
 if __name__ == "__main__":
     main()
