@@ -1,3 +1,6 @@
+#Jonatas Dias Machado Costa - 202165077AC
+#Lucas Marins Ramalho de Lima - 202165555C
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -48,12 +51,15 @@ def main():
 
         t = np.float128(np.linspace(t_ini, t_end, npoints))
         dt = (t_end-t_ini)/(npoints-1)
+
         T = cooling(T0, k, T_m, dt, npoints, 1)
         print("Exata Eulere: " + str(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T)))
         plt.plot(t, T, '-*')
+
         T = cooling(T0, k, T_m, dt, npoints, 2)
         print("Exata Euleri: " + str(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T)))
         plt.plot(t, T, '-o')
+
         T = cooling(T0, k, T_m, dt, npoints, 3)
         print("Exata Cranck-Nicolson: " + str(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T)))
         plt.plot(t, T, '-^')
