@@ -9,11 +9,11 @@ import numpy as np
 
 def solExata(eu):
     t_ini = 0
-    t_final = 100
-    c2 =  (pow(e, -(1/sqrt(eu))) - 1)/ (pow(e, (1/sqrt(eu))) - pow(e, -1/sqrt(eu)))
-    c1 = -1 - c2
+    t_final = 1
+    c2 =  (pow(e, -(1/sqrt(eu))) - 1) / (pow(e, (1/sqrt(eu))) - pow(e, -1/sqrt(eu)))
+    c1 = 0 - 1 - c2
     x = np.linspace(t_ini, t_final, 200)
-    plt.plot(x, c1* pow(e, -(x/sqrt(eu)))  +  c2*pow(e, (x/sqrt(eu))+ 1))
+    plt.plot( x, c1* pow(e, -(x/sqrt(eu)))  +  c2*pow(e, (x/sqrt(eu))+ 1) )
     plt.show()
 
 def main():
