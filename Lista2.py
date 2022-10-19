@@ -46,19 +46,20 @@ def solExata(epslon):
 def difFinita(epslon, h, npoints):
     U = np.zeros(npoints)
     U[0] = 0
+    U[1] = 0
     
 
     for i in range(1 , npoints-1):
-        U[i+1] = -U[i-1] + 2*U[i] - (((1 - U[i])* (h * h))/epslon)  
+        U[i+1] = ((U[i]-1)*(h*h))/epslon + 2*U[i] - U[i-1] 
 
-    x = np.float128(np.linspace(0, 1, npoints))
+    x = np.float16(np.linspace(0, 1, npoints))
     
     plt.plot(x, U, '-*')
     plt.show()
 
 def main():
     solExata(0.1)   
-    difFinita(0.1, 1/99, 100)
+    difFinita(0.1, 1/50, 50)
 
 
 main()
