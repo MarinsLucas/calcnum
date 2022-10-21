@@ -39,14 +39,11 @@ def calculaErro(x_prox, x_atual):
 
 
 def Tomas(a, b, c, d):
-    ''' Resolve Ax = d onde A e uma matriz tridiagonal composta pelos vetores a, b, c
-		a - subdiagonal
-        	b - diagonal principal
-		c - superdiagonal.
-	Retorna x
-    '''
-    #print('diagonais: ', a, b, c, d)
-    n = len(d) # len(d) == len(b)
+    
+    #Print para Debug
+    #print('diagonais: ', a, '\n', b, '\n', c, '\n',d)
+    
+    n = len(d) 
     c_ = [ c[0] / b[0] ]
     d_ = [ d[0] / b[0] ]
     
@@ -71,7 +68,6 @@ def F(x, epslon):
     ux = c1* pow(e, (-x/sqrt(epslon)))  +  c2*pow(e, (x/sqrt(epslon))) + 1
     return ux
 
-
 def difFinita(epslon, h, npart):
     
     ordem = npart -1
@@ -83,63 +79,80 @@ def difFinita(epslon, h, npart):
     tempoExata = []
     tempo = []
     solExata = []
-    erro = []
+    erro = [[]]
+    e_1 = []
     
-    for i in range(ordem - 1):
-        diagonalSuperior.append(epslon * -1.0)
-        diagonalInferior.append(epslon * -1.0)
-    
-    for i in range(ordem):
-        diagonalPrincipal.append(2 * epslon + (h*h))
-        termoIndependente.append(h*h)
-    
-    particoes_exata = 100
-    
-    he = 1/float(particoes_exata-1)
-    for i in range(particoes_exata):
-        dhe = he * i
-        tempoExata.append(dhe)
-        solExata.append(F(dhe, epslon))
-
-    for i in range(npart + 1):
-        dh = h * i
-        tempo.append(dh)
-    
-    solApprox = Tomas(diagonalInferior, diagonalPrincipal, diagonalSuperior, termoIndependente)
-    
-    solApprox.insert(0, 0)
-    solApprox.append(0)
-
-    partErro = len(solApprox)
-    hErro = 1/float(partErro-1)
-    solExataErro = []
-    
-    for i in range (partErro):
-        dh = hErro * i
-        solExataErro.append(F(dh, epslon))
+    while epslon > 0.0001:
+        for i in range(ordem - 1):
+            diagonalSuperior.append(epslon * -1.0)
+            diagonalInferior.append(epslon * -1.0)
         
-    erroNormaMax = calculaErro(solExataErro, solApprox)
-    print(erro)
-    print("Erro Norma Max: ", repr(erroNormaMax))
-    
-    
-    plt.plot(tempoExata, solExata, 'b--')
-    plt.plot(tempo, solApprox, '*--')
-    
-    plt.ylabel(u"Valor de u(h)")
-    plt.xlabel(u"Valor de h, " + str(npart) + u" partições")
-    
-    se_line = mlines.Line2D([], [], color='blue', marker='', markersize=0, label=u'Solução Exata')
-    ac_line = mlines.Line2D([], [], color='red', marker='', markersize=0, label=u'Solução Aprox.')
-    
-    plt.legend(handles=[se_line, ac_line])
-    
-    plt.title("Metodos de Resolucao")
-    plt.show() 
+        for i in range(ordem):
+            diagonalPrincipal.append(2 * epslon + (h*h))
+            termoIndependente.append(h*h)
+        
+        particoes_exata = 100
+        
+        he = 1/float(particoes_exata-1)
+        for i in range(particoes_exata):
+            dhe = he * i
+            tempoExata.append(dhe)
+            solExata.append(F(dhe, epslon))
 
+        for i in range(npart + 1):
+            dh = h * i
+            tempo.append(dh)
+        
+        solApprox = Tomas(diagonalInferior, diagonalPrincipal, diagonalSuperior, termoIndependente)
+        
+        solApprox.insert(0, 0)
+        solApprox.append(0)
 
-def main():
-    # solExata(0.1)   
-    difFinita(0.1, 1/40, 41)
+        partErro = len(solApprox)
+        hErro = 1/float(partErro-1)
+        solExataErro = []
+        
+        for i in range (partErro):
+            dh = hErro * i
+            solExataErro.append(F(dh, epslon))
+            
+        erroNormaMax = calculaErro(solExataErro, solApprox)
+        
+        print("Erro Norma Max: ", repr(erroNormaMax))
+        for i in range(npart):
+            e_1.append(abs(solExataErro[i] - solApprox[i]))
+        
+        plt.plot(tempoExata, solExata, 'b')
+        plt.plot(tempo, solApprox, 'r')
+        
+        plt.ylabel(u"Valor de u(h)")
+        plt.xlabel(u"Valor de h, " + str(npart) + u" partições")
+        
+        se_line = mlines.Line2D([], [], color='blue', marker='', markersize=0, label=u'Solução Exata')
+        ac_line = mlines.Line2D([], [], color='red', marker='', markersize=0, label=u'Solução Aprox.')
+        
+        plt.legend(handles=[se_line, ac_line])
+        
+        plt.title("Metodos de Resolucao")
+        plt.show() 
+
+        diagonalInferior.clear()
+        diagonalSuperior.clear()
+        diagonalPrincipal.clear()
+        termoIndependente.clear()
+        tempoExata.clear()
+        solExata.clear()
+        tempo.clear()
+
+        epslon *= 0.1
+
+    eps = [1,2,3,4]
+    plt.plot(npart, e_1)
+    plt.ylabel(u"Norma de Máximo")
+    plt.xlabel(u"-log(epsilon)")
+    plt.show()
+
+def main(): 
+    difFinita(0.1, 1/100, 101)
 
 main()
