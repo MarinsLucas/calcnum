@@ -79,8 +79,7 @@ def difFinita(epslon, h, npart):
     tempoExata = []
     tempo = []
     solExata = []
-    erro = [[]]
-    e_1 = []
+    erro = []
     
     while epslon > 0.0001:
         for i in range(ordem - 1):
@@ -119,8 +118,6 @@ def difFinita(epslon, h, npart):
         erroNormaMax = calculaErro(solExataErro, solApprox)
         
         print("Erro Norma Max: ", repr(erroNormaMax))
-        for i in range(npart):
-            e_1.append(abs(solExataErro[i] - solApprox[i]))
         
         plt.plot(tempoExata, solExata, 'b')
         plt.plot(tempo, solApprox, 'r')
@@ -145,12 +142,6 @@ def difFinita(epslon, h, npart):
         tempo.clear()
 
         epslon *= 0.1
-
-    eps = [1,2,3,4]
-    plt.plot(npart, e_1)
-    plt.ylabel(u"Norma de Máximo")
-    plt.xlabel(u"-log(epsilon)")
-    plt.show()
 
 def main(): 
     difFinita(0.1, 1/100, 101)
