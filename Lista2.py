@@ -177,7 +177,7 @@ def difFinita(epslon, h, npart, it):
 
     plt.show()
     
-    writeData(tempo, solExata, listaSolucoes, todosErros)
+    #writeData(tempo, solExata, listaSolucoes, todosErros)
 
 def main(): 
     e = np.float32(0.1)
