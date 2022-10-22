@@ -1,0 +1,9 @@
+  \centering \begin{bmatrix}
+2\epsilon + h^2 &  - \epsilon &  &  &  &  & 0 &  \\
+ - \epsilon & 2\epsilon + h^2 &  - \epsilon &  &  &  &  &  \\
+ &  - \epsilon & 2\epsilon + h^2 &   .   &  &  &  &  \\
+ &  &   .   &   .   &   .   &  &  &  \\
+ &  &  &   .   &   .   &   .   &  &  \\
+ &  &  &  &   .   &   .   &  - \epsilon &  \\
+0 &  &  &  &  &  - \epsilon & 2\epsilon + h^2 &  
+\end{bmatrix}  

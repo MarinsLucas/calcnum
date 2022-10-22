@@ -8,6 +8,20 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import numpy as np
 
+def eraseData():
+    f = open("float32.csv", "w")
+    f.write('\0')
+    f.close()
+    
+
+def writeData(x, exata, listaSolucoes, todosErros):
+    f = open("float32.csv", "a")
+    f.write("novoteste;novoteste;novoteste;novoteste;novoteste;novoteste\n")
+    f.write("TEMPO;EXATA;0.1;0.01;0.001;0.0001\n")
+    for i in range(0, len(exata)):
+        f.write(str(x[i]) + "; " + str(exata[i]) + "; " + str(listaSolucoes[0][i]) + "; " + str(listaSolucoes[1][i]) + "; " + str(listaSolucoes[2][i]) + "; " + str(listaSolucoes[3][i]) + '\n')
+    f.close()
+
 def normaMaximo(x):
     size = len(x)
     maximo = np.abs(x[0])   
@@ -80,6 +94,9 @@ def difFinita(epslon, h, npart):
     tempo = []
     solExata = []
     todosErros = []
+    listaSolucoes = []
+    
+    eraseData()
 
     while epslon > 0.0001:
 
@@ -101,14 +118,14 @@ def difFinita(epslon, h, npart):
         
         particoes_exata = 100
         
-        he = 1/float(particoes_exata-1)
+        he = np.float32(1/float(particoes_exata-1))
         for i in range(particoes_exata):
-            dhe = he * i
+            dhe = np.float32(he * i)
             tempoExata.append(dhe)
             solExata.append(F(dhe, epslon))
 
         for i in range(npart + 1):
-            dh = h * i
+            dh = np.float32(h * i)
             tempo.append(dh)
         
         solApprox = Tomas(diagonalInferior, diagonalPrincipal, diagonalSuperior, termoIndependente)
@@ -117,11 +134,11 @@ def difFinita(epslon, h, npart):
         solApprox.append(0)
 
         partErro = len(solApprox)
-        hErro = 1/float(partErro-1)
+        hErro = np.float32(1/float(partErro-1))
         solExataErro = []
         
         for i in range (partErro):
-            dh = hErro * i
+            dh = np.float32(hErro * i)
             solExataErro.append(F(dh, epslon))
              
         erroNormaMax = calculaErro(solExataErro, solApprox)
@@ -134,6 +151,7 @@ def difFinita(epslon, h, npart):
 
         plt.plot(tempoExata, solExata, 'b')
         plt.plot(tempo, solApprox, 'r')
+        listaSolucoes.append(solApprox)
         
         plt.ylabel(u"Valor de u(h)")
         plt.xlabel(u"Valor de h, " + str(npart) + u" partições")
@@ -148,15 +166,21 @@ def difFinita(epslon, h, npart):
 
         epslon *= 0.1
 
-    plt.plot(tempo, todosErros[0])
-    plt.plot(tempo, todosErros[1])
-    plt.plot(tempo, todosErros[2])
-    plt.plot(tempo, todosErros[3])
+    plt.plot(tempo, todosErros[0]) #erro 0.1
+    plt.plot(tempo, todosErros[1]) #erro 0.01
+    plt.plot(tempo, todosErros[2]) #erro 0.001
+    plt.plot(tempo, todosErros[3]) #erro 0.0001
+    
+    plt.legend(['e = 0.1', 'e = 0.01', 'e = 0.001', 'e = 0.0001'])
     plt.ylabel(u"Valor de erro")
     plt.xlabel(u"Valor de h, " + str(npart) + u" partições")
     plt.show()
+    
+    writeData(tempo, solExata, listaSolucoes, todosErros)
 
 def main(): 
-    difFinita(0.1, 1/100, 101)
+    difFinita(np.float32(0.1), np.float32(1/100), 101)
 
 main()
+
+
