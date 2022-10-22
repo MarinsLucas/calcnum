@@ -82,7 +82,7 @@ def F(x, epslon):
     ux = c1* pow(e, (-x/sqrt(epslon)))  +  c2*pow(e, (x/sqrt(epslon))) + 1
     return ux
 
-def difFinita(epslon, h, npart):
+def difFinita(epslon, h, npart, it):
     
     ordem = npart -1
     diagonalSuperior = []
@@ -98,7 +98,7 @@ def difFinita(epslon, h, npart):
     
     eraseData()
 
-    while epslon > 0.0001:
+    while epslon >= 0.0001:
 
         diagonalInferior.clear()
         diagonalSuperior.clear()
@@ -149,22 +149,21 @@ def difFinita(epslon, h, npart):
             erro.append(abs(solExataErro[j] - solApprox[j]))
         todosErros.append(erro)
 
-        plt.plot(tempoExata, solExata, 'b')
-        plt.plot(tempo, solApprox, 'r')
-        listaSolucoes.append(solApprox)
+        plt.plot(tempoExata, solExata, '-',tempo, solApprox, '-.')
         
         plt.ylabel(u"Valor de u(h)")
         plt.xlabel(u"Valor de h, " + str(npart) + u" partições")
         
-        se_line = mlines.Line2D([], [], color='blue', marker='', markersize=0, label=u'Solução Exata')
-        ac_line = mlines.Line2D([], [], color='red', marker='', markersize=0, label=u'Solução Aprox.')
+        se_line = mlines.Line2D([], [], color='blue', marker='', markersize=0, label=u'Solução Exata', linestyle='-')
+        ac_line = mlines.Line2D([], [], color='red', marker='', markersize=0, label=u'Solução Aprox.', linestyle= '-.')
         
         plt.legend(handles=[se_line, ac_line])
         
-        plt.title("Metodos de Resolucao")
+        plt.title("Metodos de Resolucao " + "ε =" + str(epslon))
         plt.show() 
 
-        epslon *= 0.1
+        epslon /= 10
+
 
     plt.plot(tempo, todosErros[0]) #erro 0.1
     plt.plot(tempo, todosErros[1]) #erro 0.01
@@ -174,13 +173,21 @@ def difFinita(epslon, h, npart):
     plt.legend(['e = 0.1', 'e = 0.01', 'e = 0.001', 'e = 0.0001'])
     plt.ylabel(u"Valor de erro")
     plt.xlabel(u"Valor de h, " + str(npart) + u" partições")
+    plt.title("i = " + str(it))
+
     plt.show()
     
     writeData(tempo, solExata, listaSolucoes, todosErros)
 
 def main(): 
-    difFinita(np.float32(0.1), np.float32(1/100), 101)
+    e = np.float32(0.1)
+    h = 4
+    for i in range(1,5):
+        difFinita(e, np.float32(1/h**i), h**i, i)
 
 main()
+
+    
+
 
 
