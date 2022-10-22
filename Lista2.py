@@ -81,7 +81,7 @@ def difFinita(epslon, h, npart):
     solExata = []
     todosErros = []
 
-    while epslon > 0.0001:
+    while epslon >= 0.0001:
 
         diagonalInferior.clear()
         diagonalSuperior.clear()
@@ -132,21 +132,20 @@ def difFinita(epslon, h, npart):
             erro.append(abs(solExataErro[j] - solApprox[j]))
         todosErros.append(erro)
 
-        plt.plot(tempoExata, solExata, 'b')
-        plt.plot(tempo, solApprox, 'r')
+        plt.plot(tempoExata, solExata, '-',tempo, solApprox, '-.')
         
         plt.ylabel(u"Valor de u(h)")
         plt.xlabel(u"Valor de h, " + str(npart) + u" partições")
         
-        se_line = mlines.Line2D([], [], color='blue', marker='', markersize=0, label=u'Solução Exata')
-        ac_line = mlines.Line2D([], [], color='red', marker='', markersize=0, label=u'Solução Aprox.')
+        se_line = mlines.Line2D([], [], color='blue', marker='', markersize=0, label=u'Solução Exata', linestyle='-')
+        ac_line = mlines.Line2D([], [], color='red', marker='', markersize=0, label=u'Solução Aprox.', linestyle= '-.')
         
         plt.legend(handles=[se_line, ac_line])
         
-        plt.title("Metodos de Resolucao")
+        plt.title("Metodos de Resolucao " + "ε =" + str(epslon))
         plt.show() 
 
-        epslon *= 0.1
+        epslon /= 10
 
     plt.plot(tempo, todosErros[0])
     plt.plot(tempo, todosErros[1])
@@ -157,6 +156,8 @@ def difFinita(epslon, h, npart):
     plt.show()
 
 def main(): 
-    difFinita(0.1, 1/100, 101)
+    for i in range(1,5):
+        difFinita(0.1, 1/4**i, 4**i)
+
 
 main()
