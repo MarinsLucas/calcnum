@@ -68,7 +68,7 @@ def F(x, epslon):
     ux = c1* pow(e, (-x/sqrt(epslon)))  +  c2*pow(e, (x/sqrt(epslon))) + 1
     return ux
 
-def difFinita(epslon, h, npart):
+def difFinita(epslon, h, npart, it):
     
     ordem = npart -1
     diagonalSuperior = []
@@ -147,17 +147,20 @@ def difFinita(epslon, h, npart):
 
         epslon /= 10
 
+
     plt.plot(tempo, todosErros[0])
     plt.plot(tempo, todosErros[1])
     plt.plot(tempo, todosErros[2])
     plt.plot(tempo, todosErros[3])
     plt.ylabel(u"Valor de erro")
     plt.xlabel(u"Valor de h, " + str(npart) + u" partições")
+    plt.title("i = " + str(it))
+
     plt.show()
 
 def main(): 
     for i in range(1,5):
-        difFinita(0.1, 1/4**i, 4**i)
+        difFinita(0.1, 1/4**i, 4**i, i)
 
 
 main()
