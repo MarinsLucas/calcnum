@@ -159,8 +159,10 @@ def difFinita(epslon, h, npart, it):
     plt.show()
 
 def main(): 
+    e = np.float32(0.1)
+    h = 4
     for i in range(1,5):
-        difFinita(0.1, 1/4**i, 4**i, i)
+        difFinita(4, np.float32(1/h**i), h**i, i)
 
 
 main()
