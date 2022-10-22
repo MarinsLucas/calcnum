@@ -79,9 +79,18 @@ def difFinita(epslon, h, npart):
     tempoExata = []
     tempo = []
     solExata = []
-    erro = np.zeros(npart + 1)
-    
+    todosErros = []
+
     while epslon > 0.0001:
+
+        diagonalInferior.clear()
+        diagonalSuperior.clear()
+        diagonalPrincipal.clear()
+        termoIndependente.clear()
+        tempoExata.clear()
+        solExata.clear()
+        tempo.clear()
+
         for i in range(ordem - 1):
             diagonalSuperior.append(epslon * -1.0)
             diagonalInferior.append(epslon * -1.0)
@@ -118,10 +127,10 @@ def difFinita(epslon, h, npart):
         erroNormaMax = calculaErro(solExataErro, solApprox)
         print("Erro Norma Max: ", repr(erroNormaMax))
         
+        erro = []
         for j in range(len(solExataErro)):
-            erro[j] = abs(solExataErro[j] - solApprox[j])
-        plt.plot(tempo, erro)
-        plt.show()
+            erro.append(abs(solExataErro[j] - solApprox[j]))
+        todosErros.append(erro)
 
         plt.plot(tempoExata, solExata, 'b')
         plt.plot(tempo, solApprox, 'r')
@@ -137,15 +146,15 @@ def difFinita(epslon, h, npart):
         plt.title("Metodos de Resolucao")
         plt.show() 
 
-        diagonalInferior.clear()
-        diagonalSuperior.clear()
-        diagonalPrincipal.clear()
-        termoIndependente.clear()
-        tempoExata.clear()
-        solExata.clear()
-        tempo.clear()
-
         epslon *= 0.1
+
+    plt.plot(tempo, todosErros[0])
+    plt.plot(tempo, todosErros[1])
+    plt.plot(tempo, todosErros[2])
+    plt.plot(tempo, todosErros[3])
+    plt.ylabel(u"Valor de erro")
+    plt.xlabel(u"Valor de h, " + str(npart) + u" partições")
+    plt.show()
 
 def main(): 
     difFinita(0.1, 1/100, 101)
