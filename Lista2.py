@@ -14,7 +14,7 @@ def eraseData():
     f.close()
 
 def writeData(x, exata, listaSolucoes, todosErros):
-    f = open("datafile.csv", "a")
+    f = open("float128.csv", "a")
     f.write("novoteste;novoteste;novoteste;novoteste;novoteste;novoteste\n")
     f.write("TEMPO;EXATA;0.1;0.01;0.001;0.0001\n")
     for i in range(0, len(listaSolucoes[0])):
@@ -113,14 +113,14 @@ def difFinita(epslon, h, npart, it):
         
         particoes_exata = 100
         
-        he = np.float32(1/float(particoes_exata-1))
+        he = np.float128(1/float(particoes_exata-1))
         for i in range(particoes_exata):
-            dhe = np.float32(he * i)
+            dhe = np.float128(he * i)
             tempoExata.append(dhe)
             solExata.append(F(dhe, epslon[b]))
 
         for i in range(npart + 1):
-            dh = np.float32(h * i)
+            dh = np.float128(h * i)
             tempo.append(dh)
         
         solApprox = Tomas(diagonalInferior, diagonalPrincipal, diagonalSuperior, termoIndependente)
@@ -130,11 +130,11 @@ def difFinita(epslon, h, npart, it):
         listaSolucoes.append(solApprox)
 
         partErro = len(solApprox)
-        hErro = np.float32(1/float(partErro-1))
+        hErro = np.float128(1/float(partErro-1))
         solExataErro = []
         
         for i in range (partErro):
-            dh = np.float32(hErro * i)
+            dh = np.float128(hErro * i)
             solExataErro.append(F(dh, epslon[b]))
              
         erroNormaMax = calculaErro(solExataErro, solApprox)
@@ -145,18 +145,18 @@ def difFinita(epslon, h, npart, it):
             erro.append(abs(solExataErro[j] - solApprox[j]))
         todosErros.append(erro)
 
-        plt.plot(tempoExata, solExata, '-',tempo, solApprox, '-.')
+        # plt.plot(tempoExata, solExata, '-',tempo, solApprox, '-.')
         
-        plt.ylabel(u"Valor de u(h)")
-        plt.xlabel(u"Valor de h, " + str(npart) + u" partições")
+        # plt.ylabel(u"Valor de u(h)")
+        # plt.xlabel(u"Valor de h, " + str(npart) + u" partições")
         
-        se_line = mlines.Line2D([], [], color='blue', marker='', markersize=0, label=u'Solução Exata', linestyle='-')
-        ac_line = mlines.Line2D([], [], color='red', marker='', markersize=0, label=u'Solução Aprox.', linestyle= '-.')
+        # se_line = mlines.Line2D([], [], color='blue', marker='', markersize=0, label=u'Solução Exata', linestyle='-')
+        # ac_line = mlines.Line2D([], [], color='red', marker='', markersize=0, label=u'Solução Aprox.', linestyle= '-.')
         
-        plt.legend(handles=[se_line, ac_line])
+        # plt.legend(handles=[se_line, ac_line])
         
-        plt.title("Metodos de Resolucao " + "ε =" + str(epslon[b]))
-        plt.show() 
+        # plt.title("Metodos de Resolucao " + "ε =" + str(epslon[b]))
+        # plt.show() 
 
     plt.plot(tempo, todosErros[0]) #erro 0.1
     plt.plot(tempo, todosErros[1]) #erro 0.01
@@ -174,10 +174,10 @@ def difFinita(epslon, h, npart, it):
 
 def main(): 
     eraseData()
-    e = [0.1 , 0.01, 0.001, 0.0001]
+    e = [np.float128(0.1) , np.float128(0.01), np.float128(0.001), np.float128(0.0001)]
     h = 4
     for i in range(1,6):
-        difFinita(e, np.float32(1/h**i), h**i, i)
+        difFinita(e, np.float128(1/h**i), h**i, i)
 
 main()
 
