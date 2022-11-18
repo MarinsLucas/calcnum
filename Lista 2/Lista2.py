@@ -73,7 +73,7 @@ def substituicao_regressiva(M, B):
     #checa se e superior
     isSuperior = (M[ordem-1][0] == 0)
     
-    #percorre as linhas da matriz (ta funcionando)
+    #percorre as linhas da matriz 
     for n in range(0, ordem):  
         
         #define o i se for superior ou inferior
@@ -266,7 +266,7 @@ def cholesky(A, n, B):
             passos+=1
             soma += G[i][k]* G[j][k]
 
-        G[i][j] = (A[i][j] - soma) / G[j][j] #TODO: será que precisa fazer a transporta da G?
+        G[i][j] = (A[i][j] - soma) / G[j][j]
 
     #gerando a matriz L lower
     L = [[0.0] * len(G) for _ in range(len(G))]
@@ -278,12 +278,12 @@ def cholesky(A, n, B):
                 L[i][j] = math.sqrt(G[i][i] - s)
             else:
                 L[i][j] = (1.0 / L[j][j] * (G[i][j] - s))
-    
+
     Y = substituicao_regressiva(L, B)
     L = transposta(L, n)
-    retro2 = substituicao_regressiva(L,Y)
+    sol = substituicao_regressiva(L,Y)
 
-    return retro2
+    return sol
 
 def main():
 
