@@ -45,3 +45,44 @@
     pprint.pprint(U)
 
     return x
+
+
+
+
+def cholesky(matriz, n, solucao):
+    # Decomposição de Cholesky
+    for i in range(n):
+        for j in range(i + 1):
+            soma = sum(matriz[i][k] * matriz[j][k] for k in range(j))
+
+            if (i == j):  # se for na diagonal
+                if (matriz[i][i] - soma <= 0):  # verifica se é positiva definida
+                    sys.exit('Matriz nao e positiva definida!')
+
+                matriz[i][i] = np.sqrt(matriz[i][i] - soma)
+            else:
+                matriz[i][j] = np.float16((matriz[i][j] - soma)/matriz[j][j])
+
+    # Substituição progressiva
+    for i in range(n):
+        if (matriz[i][i] == 0.0):
+            sys.exit('Divisao por zero detectada!')
+
+        for j in range(i + 1, n):
+            razao = np.float16(matriz[j][i]/matriz[i][i])
+
+            for k in range(n + 1):
+                matriz[j][k] = np.float16(matriz[j][k] - razao * matriz[i][k])
+
+    # Substituição regressiva
+    solucao[n - 1] = np.float16(matriz[n - 1][n]/matriz[n - 1][n - 1])
+
+    for i in range(n - 2, -1, -1):
+        solucao[i] = np.float16(matriz[i][n])
+
+        for j in range(i + 1, n):
+            solucao[i] = np.float16(solucao[i] - matriz[i][j] * solucao[j])
+
+        solucao[i] = np.float16(solucao[i]/matriz[i][i])
+
+    return solucao

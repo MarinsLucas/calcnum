@@ -1,10 +1,16 @@
 import numpy as np
 import pprint
 import sys
+import math
 
 # -----------------------------------------------#
 # Funções auxiliares
-
+def transposta(A, n):
+    B = np.zeros((n,n))
+    for i in range(n):
+        for j in range(n):
+            B[i][j] = A[j][i]
+    return B
 
 def troca_linha(matriz, i, j, n):
     for k in range(n + 1):
@@ -53,22 +59,45 @@ def matriz_multi(M, N):
 
     return matriz
 
-def substituicao_regressiva(M, n):
-    solucao = np.zeros(n, dtype=np.float16)
+def substituicao_regressiva(M, B):
+    if(len(M)==0):
+        return 0
+    
+    ordem = len(M[0])
+    temp = 0
+    passos = 0
+    
+    #cria array de solucao
+    sol = np.array([0] * ordem, np.float64)
+    
+    #checa se e superior
+    isSuperior = (M[ordem-1][0] == 0)
+    
+    #percorre as linhas da matriz (ta funcionando)
+    for n in range(0, ordem):  
+        
+        #define o i se for superior ou inferior
+        if(isSuperior):
+            i = ordem - n - 1
+        else:
+            i = n
+        
+        #valor do vetor solucao da linha correspondente
+        temp = B[i]
+        
+        #soma os valores exceto o valor do pivo
+        for j in range(0, ordem):
+            if(j != i):
+                temp += sol[j] * M[i][j] * -1
+                passos += 1
+                
+            
+        #calcula a solucao da linha, usando a soma e o valor do pivo
+        sol[i] = temp / M[i][i]
+        
 
-    for i in range(n - 1, -1, -1):
-        # Inicializa o vetor solução com a última coluna da matriz
-        solucao[i] = M[i][n]
-
-        # Subtrai os elementos da solução já encontrados
-        # j é i + 1 pois os elementos da diagonal principal já foram zerados
-        for j in range(i + 1, n):
-            solucao[i] = np.float16(solucao[i] - M[i][j] * solucao[j])
-
-        # Divide o elemento da solução pelo elemento da diagonal principal
-        solucao[i] = np.float16(solucao[i]/M[i][i])
-
-    return solucao
+        
+    return list(sol)
 
 def substituicao_progressiva(M, n):
     solucao = np.zeros(n, dtype=np.float16)
@@ -189,6 +218,8 @@ def decomposicao_LU(A, n, B):
                 A[i][j] = (A[i][j] - s)/float(A[i][i])
     #FIM DA DECOMPOSIÇÃO EM LU 
 
+
+    #INÍCIO DA RESOLUÇÃO DA LU
     assert len(B) == n
     
     pprint.pprint(A)
@@ -212,9 +243,47 @@ def decomposicao_LU(A, n, B):
     return x
 
 # Método de Cholesky
-def cholesky(matriz, n, solucao):
-    return solucao
+def cholesky(A, n, B):
+    G = np.zeros((n,n))
 
+    passos = 0
+
+    for i in range(n):
+        soma = 0
+        #gerando diagonal principal
+        for j in range(i+1):
+            passos+=1
+            if(j != i):
+                #soma dos quadrados
+                soma += G[i][j]**2
+            else:
+                G[i][j] = math.sqrt(A[i][i] - soma)
+        
+    #gerando demais elementos
+    for i in range(j+1):
+        soma = 0
+        for k in range(j-1):
+            passos+=1
+            soma += G[i][k]* G[j][k]
+
+        G[i][j] = (A[i][j] - soma) / G[j][j] #TODO: será que precisa fazer a transporta da G?
+
+    #gerando a matriz L lower
+    L = [[0.0] * len(G) for _ in range(len(G))]
+    for i in range(len(G)):
+        for j in range(i+1):
+            passos += 1
+            s = sum(L[i][k] * L[j][k] for k in range(j))
+            if(i==j):
+                L[i][j] = math.sqrt(G[i][i] - s)
+            else:
+                L[i][j] = (1.0 / L[j][j] * (G[i][j] - s))
+    
+    Y = substituicao_regressiva(L, B)
+    L = transposta(L, n)
+    retro2 = substituicao_regressiva(L,Y)
+
+    return retro2
 
 def main():
 
@@ -222,7 +291,7 @@ def main():
     n = int(input('Insira o numero de equacoes: '))
 
     # Cria e inicializa a matriz ampliada
-    matriz = np.zeros((n, n + 1), dtype=np.float16)
+    matrizAmpliada = np.zeros((n, n + 1), dtype=np.float16)
 
     # Cria e inicializa o vetor solução
     solucao = np.zeros(n, dtype=np.float16)
@@ -230,40 +299,40 @@ def main():
     # Insere os coeficientes na matriz ampliada
     for i in range(n):
         for j in range(n):
-            matriz[i][j] = np.float16(1/(i + j + 1))
+            matrizAmpliada[i][j] = np.float16(1/(i + j + 1))
 
     for i in range(n):
-        matriz[i][n] = np.float16(1/(i + n + 1))
+        matrizAmpliada[i][n] = np.float16(1/(i + n + 1))
         
         
     termosIndependentes = np.zeros(n, dtype=np.float16)
-    matrizLU = np.zeros((n, n), dtype=np.float16)
+    matriz = np.zeros((n, n), dtype=np.float16)
     
     for i in range(n):
-        termosIndependentes[i] = matriz[i][n]
+        termosIndependentes[i] = matrizAmpliada[i][n]
         
     for i in range(n):
         for j in range(n):
-            matrizLU[i][j] = matriz[i][j]
+            matriz[i][j] = matrizAmpliada[i][j]
             
     # Imprime a matriz ampliada
     print('\nMatriz ampliada: ')
     for i in range(n):
         for j in range(n + 1):
-            print('%0.2f' % matriz[i][j], end='\t')
+            print('%0.2f' % matrizAmpliada[i][j], end='\t')
         print('')
 
     # Pergunta se o usuário quer usar o método de gauss com ou sem pivoteamento, e dependendo da resposta chama a função necessária
     metodo = int(input(
         '\n1 - Gauss sem pivoteamento\n2 - Gauss com pivoteamento\n3 - Decomposicao LU\n4 - Cholesky\n\nInsira o metodo que deseja usar: '))
     if metodo == 1:
-        solucao = gauss(matriz, n, solucao)
+        solucao = gauss(matrizAmpliada, n, solucao)
     elif metodo == 2:
-        solucao = gauss_pivoteamento(matriz, n, solucao)
+        solucao = gauss_pivoteamento(matrizAmpliada, n, solucao)
     elif metodo == 3:
-        solucao = decomposicao_LU(matrizLU, n, termosIndependentes)
+        solucao = decomposicao_LU(matriz, n, termosIndependentes)
     elif metodo == 4:
-        solucao = cholesky(matriz, n, solucao)
+        solucao = cholesky(matriz, n, termosIndependentes)
     else:
         sys.exit('Metodo invalido!')
 
