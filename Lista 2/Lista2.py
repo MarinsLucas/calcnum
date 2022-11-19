@@ -325,8 +325,7 @@ def cholesky(A, B, n):
         for j in range(i+1):
             passos += 1
             s = sum(L[i][k] * L[j][k] for k in range(j))
-            L[i][j] = math.sqrt(A[i][i] - s) if (i == j) else \
-                        (1.0 / L[j][j] * (A[i][j] - s))
+            L[i][j] = math.sqrt(A[i][i] - s) if (i == j) else (1.0 / L[j][j] * (A[i][j] - s))
 
     #transposta da matriz L
     Lt = transposta(L, n)
@@ -372,9 +371,6 @@ def gauss_seidel(M, B, u, E, max_iteracoes):
         if(erro < E):
             print("Terminou Gauss Seidel com erro de: ", erro)
             return X
-            
-        #recebe vetor anterior
-        Xa = list(X)#copia lista
 
     print("Gauss Seidel nao convergiu ou precisa de mais iteracoes para convergir")
     return X
@@ -413,11 +409,10 @@ def jacobi(A, B, u, E, max_iteracoes):
         #prepara proxima iteracao com aproximacao da anterior
         X = np.array(Xp, np.float64)
         
-        
+        #Imprime número de iterações de 100 em 100
         if(k % 100 == 0):
             print("Jacobi fez " + str(k) + " iteracoes...")
     
-        
     print("Jacobi nao convergiu ou precisa de mais iteracoes para convergir")
     return list(Xp)
 
@@ -427,12 +422,8 @@ def main():
     B = np.array([2, 8, 10], dtype=np.float16)
     solucao = np.zeros(3)
     
-    """ print('A original:')
-    pprint.pprint(A) """
-    
-    print('Solução do sistema pelo método de Gauss com pivoteamento:')
     solucao = cholesky(A, B, n)
-    #solucao = jacobi(A, B, [1.0] * n, 0.001, 5000)
+    solucao = gauss_seidel(A, B, [1.0] * n, 0.001, 5000)
     pprint.pprint(solucao)
 
 
