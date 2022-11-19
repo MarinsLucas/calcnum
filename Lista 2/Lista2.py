@@ -18,6 +18,36 @@ def troca_linha(A, i, j, n):
         A[i][k] = A[j][k]
         A[j][k] = temp
 
+
+def normaMaximo(x):
+    size = len(x)
+    maximo = abs(x[0])   
+    
+    for i in range(size):
+        temp = abs(x[i])        
+        if(temp > maximo):
+            maximo = temp
+            
+    return maximo
+    
+def distanciaMaximo(x1, x2):
+    if(len(x1) != len(x2)):
+        print("O tamanho dos vetores x1 e x2 precisa ser o mesmo")
+        return 0
+        
+    size = len(x1)
+    dist = abs(x1[0] - x2[0])  
+    
+    for i in range(size):
+        temp = abs(x1[i] - x2[i])
+        if(temp > dist):
+            dist = temp
+            
+    return dist
+        
+def calculaErro(x_prox, x_atual):
+    return distanciaMaximo(x_prox, x_atual) / normaMaximo(x_prox)
+
 def matriz_pivo(M):
     m = len(M)
 
@@ -329,6 +359,91 @@ def cholesky(A, B, n):
 
     return sol
 
+#Método de Gauss Seidel
+def gauss_seidel(M, B, u, E, max_iteracoes):
+        
+    ordem = len(M[0])
+    X = list(u)
+    Xerro = list(u)#vetor pra calcular o erro
+    passos = 0
+
+    print("ordem da matriz", ordem)
+
+    for k in range(max_iteracoes):
+        
+        #percorre a matriz
+        for i in range(ordem):
+            #comeca a soma pelo termo do vetor fonte
+            soma = B[i]
+            div = 0
+            for j in range(ordem):
+                passos += 1
+                #separa o divisor
+                if(i==j):
+                    div = M[i][j]
+                else:
+                    soma += M[i][j] * X[j] * -1.0
+            #cria vetor de solucoes para proxima iteracao com resultados da linha
+            X[i] = soma / div
+            
+        if(k % 100 == 0):
+            print("Gauss-Seidel fez " + str(k) + " iteracoes...")
+        
+        #se atingir o criterio de parada, interrompe e retorna os resultados
+        erro = calculaErro(X,Xerro)
+        
+        if(erro < E):
+            print("Terminou Gauss Seidel com erro de: ", erro)
+            return X
+            
+        #recebe vetor anterior
+        Xa = list(X)#copia lista
+
+    print("Gauss Seidel nao convergiu ou precisa de mais iteracoes para convergir")
+    return X
+
+#Método Jacobi
+def jacobi(A, B, u, E, max_iteracoes):
+    ordem = len(A)
+    X = np.array(u, np.float64)
+    Xp = np.array(u, np.float64)
+    B = np.array(B, np.float64)
+    passos = 0
+    iteracoes = 0
+    
+    for k in range(max_iteracoes):
+        iteracoes += 1
+        
+        for i in range(ordem):
+            soma = 0.0
+            passos += 1
+            #passa linha pra um array
+            L = np.array(A[i], np.float64)
+            #zera o lugar onde seria o valor da diagonal principal
+            L[i] = 0
+            #faz produto escalar entre os vetores
+            soma = np.dot(L, X)
+            
+            Xp[i] = (1.0 / A[i][i]) * (B[i] - soma)
+            
+        #se atingir o criterio de parada, interrompe e retorna os resultados
+        erro = calculaErro(Xp, X) 
+
+        if(erro < E):
+            print("Terminou Jacobi com erro de: ", erro)
+            return list(Xp)
+        
+        #prepara proxima iteracao com aproximacao da anterior
+        X = np.array(Xp, np.float64)
+        
+        
+        if(k % 100 == 0):
+            print("Jacobi fez " + str(k) + " iteracoes...")
+    
+        
+    print("Jacobi nao convergiu ou precisa de mais iteracoes para convergir")
+    return list(Xp)
+
 def main():
     n = 3
     A = np.array([[2, 4, -2], [4, 9, -3], [-2, -3, 7]], dtype=np.float16)
@@ -339,7 +454,8 @@ def main():
     pprint.pprint(A) """
     
     print('Solução do sistema pelo método de Gauss com pivoteamento:')
-    solucao = gauss_pivoteamento(A, B, n)
+    #solucao = decomposicao_LU(A, B, n)
+    solucao = jacobi(A, B, [1.0] * n, 0.001, 5000)
     pprint.pprint(solucao)
 
 
