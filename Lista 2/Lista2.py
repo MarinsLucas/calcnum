@@ -317,47 +317,24 @@ def decomposicao_LU(A, B, n):
     return resolveLU(A, B, n)
 
 # Método de Cholesky
-def cholesky(A, B, n):
-    G = np.zeros((n,n))
-
+def cholesky(A, B, n):    
     passos = 0
-
-    for i in range(n):
-        soma = 0
-        #gerando diagonal principal
-        for j in range(i+1):
-            passos+=1
-            if(j != i):
-                #soma dos quadrados
-                soma += G[i][j]**2
-            else:
-                G[i][j] = math.sqrt(A[i][i] - soma)
-        
-    #gerando demais elementos
-    for i in range(j+1):
-        soma = 0
-        for k in range(j-1):
-            passos+=1
-            soma += G[i][k]* G[j][k]
-
-        G[i][j] = (A[i][j] - soma) / G[j][j]
-
-    #gerando a A L lower
-    L = [[0.0] * len(G) for _ in range(len(G))]
-    for i in range(len(G)):
+    
+    L = [[0.0] * len(A) for _ in range(len(A))]
+    for i in range(len(A)):
         for j in range(i+1):
             passos += 1
             s = sum(L[i][k] * L[j][k] for k in range(j))
-            if(i==j):
-                L[i][j] = math.sqrt(G[i][i] - s)
-            else:
-                L[i][j] = (1.0 / L[j][j] * (G[i][j] - s))
+            L[i][j] = math.sqrt(A[i][i] - s) if (i == j) else \
+                        (1.0 / L[j][j] * (A[i][j] - s))
 
-    Y = substituicao_regressiva(L, B, n)
-    L = transposta(L, n)
-    sol = substituicao_regressiva(L, Y, n)
-
-    return sol
+    #transposta da matriz L
+    Lt = transposta(L, n)
+    
+    #vetor X de resposta
+    X = substituicao_regressiva(Lt, substituicao_regressiva(L, B, n), n)
+    
+    return X
 
 #Método de Gauss Seidel
 def gauss_seidel(M, B, u, E, max_iteracoes):
@@ -454,8 +431,8 @@ def main():
     pprint.pprint(A) """
     
     print('Solução do sistema pelo método de Gauss com pivoteamento:')
-    #solucao = decomposicao_LU(A, B, n)
-    solucao = jacobi(A, B, [1.0] * n, 0.001, 5000)
+    solucao = cholesky(A, B, n)
+    #solucao = jacobi(A, B, [1.0] * n, 0.001, 5000)
     pprint.pprint(solucao)
 
 
