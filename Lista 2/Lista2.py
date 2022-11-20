@@ -172,6 +172,9 @@ def decompoeLU(M, n):
             for k in range(j):
                 soma += L[i][k] * U[k][j]
             L[i][j] = M[i][j] - soma
+            
+        """ print("L: ")
+        pprint.pprint(L) """
 
     #Calcula U
         for j in range(i, ordem):
@@ -179,6 +182,10 @@ def decompoeLU(M, n):
             for k in range(i):
                 soma += L[i][k] * U[k][j]
             U[i][j] = (M[i][j] - soma) / L[i][i]
+            
+        """ print("U: ")
+        pprint.pprint(U) """
+    
     return (L, U)
 
 
@@ -322,12 +329,10 @@ def gauss_pivoteamento(A, B, n):
 
 # Método de Cholesky
 def cholesky(A, B, n):
-    passos = 0
 
     L = [[0.0] * len(A) for _ in range(len(A))]
     for i in range(len(A)):
         for j in range(i + 1):
-            passos += 1
             s = sum(L[i][k] * L[j][k] for k in range(j))
             L[i][j] = math.sqrt(A[i][i] - s) if (i == j) else (1.0 / L[j][j] *
                                                                (A[i][j] - s))
@@ -359,7 +364,6 @@ def gauss_seidel(M, B, u, E, max_iteracoes):
             soma = B[i]
             div = 0
             for j in range(ordem):
-                passos += 1
                 #separa o divisor
                 if (i == j):
                     div = M[i][j]
@@ -437,69 +441,68 @@ def main():
     solucao = np.zeros(n, dtype=np.float128)
     start = 0
     end = 0
-    for x in range(1, 7):
-        if questao == 1:
-            for i in range(n):
-                for j in range(n):
-                    A[i][j] = np.float128(1 / (i + j + 1))
-                B[i] = np.float128(1 / (i + n + 1))
-        elif questao == 2:
-            k = int(np.sqrt(n))
-            B = 10 * np.ones(n)
-            for i in range(0, n):
-                A[i, i] = -4
-            for i in range(0, n - 1):
-                A[i + 1, i] = 1
-                A[i, i + 1] = 1
+    if questao == 1:
+        for i in range(n):
+            for j in range(n):
+                A[i][j] = np.float128(1 / (i + j + 1))
+            B[i] = np.float128(1 / (i + n + 1))
+    elif questao == 2:
+        k = int(np.sqrt(n))
+        B = 10 * np.ones(n)
+        for i in range(0, n):
+            A[i, i] = -4
+        for i in range(0, n - 1):
+            A[i + 1, i] = 1
+            A[i, i + 1] = 1
             if ((i + 1) % k == 0):
                 A[i + 1, i] = 0
                 A[i, i + 1] = 0
-            for i in range(k, n):
-                A[i - k, i] = 1
-                A[i, i - k] = 1
+        for i in range(k, n):
+            A[i - k, i] = 1
+            A[i, i - k] = 1
 
-            A = -A * (k - 1)**2
+        A = -A * (k - 1)**2
 
-        #x = int(input('Digite o metodo desejado:\n1 - Gauss com pivoteamento \n2 - Gauss sem pivoteamento \n3 - Decomposicao LU \n4 - Cholesky\n5 - Gauss Seidel\n6 - Jacobi\n'))
-        if x == 1:
-            print("Gauss pivoteado")
-            start = time.time()
-            solucao = gauss_pivoteamento(A, B, n)
-            end = time.time()
-        elif x == 2:
-            print("Gauss sem pivoteado")
-            start = time.time()
-            solucao = gauss(A, B, n)
-            end = time.time()
-        elif x == 3:
-            print("Decomposicao LU")
-            start = time.time()
-            solucao = decomposicao_LU(A, B, n)
-            end = time.time()
-        elif x == 4:
-            print("Cholesky")
-            start = time.time()
-            solucao = cholesky(A, B, n)
-            end = time.time()
-        elif x == 5:
-            start = time.time()
-            solucao = gauss_seidel(A, B, [0.0] * n, 0.01, 1000)
-            end = time.time()
-        elif x == 6:
-            start = time.time()
-            solucao = jacobi(A, B, [0.0] * n, 0.01, 1000)
-            end = time.time()
-        else:
-            print("valor de método incorreto")
-            sys.exit(1)
+    x = int(input('Digite o metodo desejado:\n1 - Gauss com pivoteamento \n2 - Gauss sem pivoteamento \n3 - Decomposicao LU \n4 - Cholesky\n5 - Gauss Seidel\n6 - Jacobi\n'))
+    if x == 1:
+        print("Gauss pivoteado")
+        start = time.time()
+        solucao = gauss_pivoteamento(A, B, n)
+        end = time.time()
+    elif x == 2:
+        print("Gauss sem pivoteado")
+        start = time.time()
+        solucao = gauss(A, B, n)
+        end = time.time()
 
-        #xs = np.arange(0, n, 1)
-        #plt.plot(xs, erro(A, B, solucao, n), 'r')
-        #plt.plot(xs, solucao, 'b')
-        #plt.show()
+    elif x == 3:
+        print("Decomposicao LU")
+        start = time.time()
+        solucao = decomposicao_LU(A, B, n)
+        end = time.time()
+    elif x == 4:
+        print("Cholesky")
+        start = time.time()
+        solucao = cholesky(A, B, n)
+        end = time.time()
+    elif x == 5:
+        start = time.time()
+        solucao = gauss_seidel(A, B, [0.0] * n, 0.01, 1000)
+        end = time.time()
+    elif x == 6:
+        start = time.time()
+        solucao = jacobi(A, B, [0.0] * n, 0.01, 1000)
+        end = time.time()
+    else:
+        print("valor de método incorreto")
+        sys.exit(1)
 
-        print('\nErro: ' + str(maxNorma(A, B, solucao, n)))
-        print('\nElapsed Time ' + str(end - start))
+    #xs = np.arange(0, n, 1)
+    #plt.plot(xs, solucao, 'b')
+    #plt.show()
+
+    print('\nErro: ' + str(maxNorma(A, B, solucao, n)))
+    print('\nElapsed Time ' + str(end - start))
 
 
 if __name__ == "__main__":
