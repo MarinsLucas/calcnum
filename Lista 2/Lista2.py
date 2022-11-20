@@ -4,10 +4,11 @@ import sys
 import math
 import matplotlib.pyplot as plt
 
+#TODO: - Calculo de erro
 #TODO: (1) comparar o tempo de execução de todos para cada n em uma tabela 
 #TODO: (1) tabela de erros
 #TODO: (1) conclusões sobre o determinante da matriz 
-#TODO: (2) tabela comparando os tempos de execução dos métodos da questão 1 e da 2 adotando direfentes valores de epslon
+#TODO: (2) tabela comparando os tempos de execução dos métodos da questão 1 e da 2 adotando direfentes valores de epslon e usando
 #          n = 81, 289, 1089, 4225, 16641
 # -----------------------------------------------#
 # Funções auxiliares
@@ -206,9 +207,10 @@ def decomposicao_LU(M, B, n):
         x[i] = soma/U[i][i]
     return x
 
-
+def erro(A,sol,gerado):
+    return np.linalg.norm(np.max(A*gerado-sol))
 def maxNorma(A, B, x, n):
-    max = abs(A[0][0] * x[0] - B[0])
+    max = 0
     
     for i in range(n):
         for j in range(n):
@@ -457,7 +459,7 @@ def main():
     plt.plot(xs, solucao, 'r')  
     plt.show()
     
-    print('\nErro: ' + str(maxNorma(A, B, solucao, n)))
+    print('\nErro: ' + str(maxNorma(A, B, solucao,n)))
     
 if __name__ == "__main__":
     main()
