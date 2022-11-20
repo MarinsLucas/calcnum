@@ -516,34 +516,68 @@ vector<double> jacobi(vector<vector<double> > A, vector<double> B, vector<double
 
 
 int main(){
-    int n;
+    int n, questao;
     clock_t begin, end;
     double time_spent;
-
+    cout <<"Qual questão: ";
+    cin>>questao;
     cout << "Digite o numero de equacoes: ";
     cin >> n;
     vector<vector<double>> A(n, vector<double>(n));
     vector<double> B(n);
     vector<double> solucao(n);
     vector<double> xs; 
+    int k = sqrt(n);
     
-    for(int i = 0; i < n; i++){
-        for(int j = 0; j < n; j++){
-            A[i][j] =
-            1.0/(i + j + 1);
+    if(questao == 1)
+    {
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                A[i][j] =
+                1.0/(i + j + 1);
+            }
+            B[i] = 1.0/(i + n + 1); 
+            xs.push_back(1);
         }
-        B[i] = 1.0/(i + n + 1); 
-        xs.push_back(1);
+    }
+    else
+    {
+        //Todas as posições de B com 10 
+        for(int i=0; i<n; i++)
+        {
+            A[i][i] = -4;
+        }
+        for(int i=0; i<n-1; i++)
+        {
+            A[i+1][i] = 1;
+            A[i][i+1] = 1;
+        
+            if((i+1)%k == 0)
+            {
+                A[i+1][i] =0;
+                A[i][i+1] =0; 
+            }
+        }
+        for(int i=k; i<n; i++)
+        {
+            A[i-k][i] = 1;
+            A[i][i-k] = 1; 
+        }
+
+        for(int i =0; i<n; i++)
+        {
+            for(int j=0; j<n; j++)
+            {
+                A[i][j] = -(A[i][j]*(k-1) * A[i][j]*(k-1));
+            }
+        }
     }
 
-    /* int x;
+    int x;
     cout << "Digite o metodo desejado:\n1 - Gauss com pivoteamento \n2 - Gauss sem pivoteamento \n3 - Decomposicao LU \n4 - Cholesky\n5 - Gauss Seidel\n";
-    cin >> x; */
+    cin >> x;
 
-    for (int i = 1; i < 5; i++)
-    {
-        cout << endl;
-        switch (i){
+        switch (x){
         case 1:
             cout << "Gauss com pivoteamento" << endl;
             begin = clock();
@@ -577,8 +611,7 @@ int main(){
             cout<<"jacobi"<<endl;
             solucao = jacobi(A, B, xs, 0.001, 5000);
             break;
-    }
-    
+
     xs.clear();
     /* cout << "Solucao: " << endl; */
     for(int j = 0; j < n; j++){
@@ -592,7 +625,7 @@ int main(){
     /* cout << endl << "Erro: " << maxNorma(A, B, solucao, n) << endl; */
     cout << "Tempo de execucao: " << time_spent << endl;
 
-    /* plotaGrafico(solucao, xs);  */
+    plotaGrafico(solucao, xs); 
     }
     
 
