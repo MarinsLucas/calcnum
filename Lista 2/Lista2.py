@@ -2,7 +2,13 @@ import numpy as np
 import pprint
 import sys
 import math
+import matplotlib.pyplot as plt
 
+#TODO: (1) comparar o tempo de execução de todos para cada n em uma tabela 
+#TODO: (1) tabela de erros
+#TODO: (1) conclusões sobre o determinante da matriz 
+#TODO: (2) tabela comparando os tempos de execução dos métodos da questão 1 e da 2 adotando direfentes valores de epslon
+#          n = 81, 289, 1089, 4225, 16641
 # -----------------------------------------------#
 # Funções auxiliares
 def transposta(A, n):
@@ -48,45 +54,6 @@ def distanciaMaximo(x1, x2):
 def calculaErro(x_prox, x_atual):
     return distanciaMaximo(x_prox, x_atual) / normaMaximo(x_prox)
 
-def matriz_pivo(M):
-    m = len(M)
-
-    # Cria a A identidade com valores float16
-    A_id = np.identity(m, dtype=np.float16)
-
-    for k in range(m):
-        # Inicializa o maior elemento para índice e pivô
-        i_max = k
-        pivo_max = M[i_max][k]
-
-        # Encontra o maior elemento da coluna e associa ao pivô
-        for i in range(k + 1, m):
-            if (abs(M[i][k]) > pivo_max):
-                pivo_max = M[i][k]
-                i_max = i
-
-        if not M[k][i_max]:  # Se o pivô for zero
-            sys.exit('Divisao por zero detectada!')
-
-        # Troca a linha do maior elemento com a linha atual
-        if (i_max != k):
-            troca_linha(A_id, k, i_max, m)
-
-    return A_id
-
-
-def matriz_multi(M, N):
-    m = len(M)
-    n = len(N[0])
-    p = len(M[0])
-    A = np.zeros((m, n), dtype=np.float16)
-
-    for i in range(m):
-        for j in range(n):
-            for k in range(p):
-                A[i][j] += M[i][k] * N[k][j]
-
-    return A
 
 def substituicao_regressiva(M, B, n):
     if(len(M)==0):
@@ -97,7 +64,7 @@ def substituicao_regressiva(M, B, n):
     passos = 0
     
     #cria array de solucao
-    sol = np.array([0] * ordem, np.float64)
+    sol = np.array([0] * ordem, np.float128)
     
     #checa se e superior
     isSuperior = (M[ordem-1][0] == 0)
@@ -137,7 +104,7 @@ def substituicao_progressiva(M, B, n):
     passos = 0
     
     #cria array de solucao
-    sol = np.array([0] * ordem, np.float64)
+    sol = np.array([0] * ordem, np.float128)
     
     #checa se e superior
     isSuperior = (M[ordem-1][0] == 0)
@@ -170,7 +137,7 @@ def substituicao_progressiva(M, B, n):
 
 def matriz_aumentada(A, B, n):
     # Cria uma nova matriz com n linhas e n + 1 colunas e adiciona a coluna B à matriz A
-    M = np.zeros((n, n + 1), dtype=np.float16)
+    M = np.zeros((n, n + 1), dtype=np.float128)
 
     for i in range(n):
         for j in range(n):
@@ -181,54 +148,82 @@ def matriz_aumentada(A, B, n):
 
     return M
 
-def decompoeLU(A, n):
-    for j in range(n):
-        for i in range(n):
-            # Parte L da matriz
-            if(i >= j):
-                s = 0;
-                for k in range(0, j):
-                    s += A[i][k] * A[k][j]
-                A[i][j] -= s 
-                
-            # Parte U da matriz
-            else: 
-                s = 0
-                for k in range(0, i):
-                    s += A[i][k] * A[k][j]
-                    
-                A[i][j] = (A[i][j] - s) / float(A[i][i])
-                
-    return A
-
-def resolveLU(LU, B, n):
+def decompoeLU(M, n):
     
-    # Resolve Ly = b
-    y = np.zeros(n, dtype=float)
+        ordem = len(M[0])
+
+        L = np.zeros((n,n), dtype=np.float128)
+        U = np.zeros((n,n), dtype=np.float128)
+        
+        #print(type(M[0]))
+        
+        for j in range(ordem):
+            U[0][j] = M[0][j]
+        for i in range(ordem):
+            L[i][0] = M[i][0]/U[0][0]
+        
+        for i in range(ordem):
+        #Calcula L
+            for j in range(i+1):
+                soma = 0.0
+                for k in range(j):
+                    soma += L[i][k] * U[k][j]
+                L[i][j] = M[i][j] - soma
+                    
+        #Calcula U
+            for j in range(i,ordem):
+                soma = 0.0
+                for k in range(i):
+                   soma += L[i][k] * U[k][j]
+                U[i][j] = (M[i][j] - soma)/L[i][i]
+        return (L, U)
+
+def decomposicao_LU(M, B, n):
+    if(len(M)==0):
+        return 0
+    
+    ordem = n
+    
+    y = [0.0 for i in range(ordem)]
+    x = [0.0 for i in range(ordem)]
+    (L, U) = decompoeLU(M, n)
+    
+    # Resolução L * y = b
+    
+    y[0] = B[0]/L[0][0]
+    for i in range(1, ordem):
+        soma = 0.0
+        for j in range(i):
+            soma += L[i][j] * y[j]
+        y[i] = (B[i] - soma)/L[i][i]
+    
+    # Resolucao U * x = y
+    x[ordem-1] = y[ordem-1]/U[ordem-1][ordem-1]
+    for i in range(ordem-1, -1, -1):
+        soma = y[i]
+        for j in range(i+1, ordem):
+            soma = soma - U[i][j] * x[j]
+        x[i] = soma/U[i][i]
+    return x
+
+
+def maxNorma(A, B, x, n):
+    max = abs(A[0][0] * x[0] - B[0])
     
     for i in range(n):
-        s = 0
-        for j in range(0, i):
-            s += LU[i][j] * y[j]
-        y[i] = (B[i] - s) / float(LU[i][i])
-        
-    # Resolve Ux = y
-    x = np.zeros(n, dtype=float)
-    
-    for i in range(n-1, -1, -1):
-        s = 0
-        for j in range(i+1, n):
-            s += LU[i][j] * x[j]
-        x[i] = (y[i] - s)
-    
-    return x
+        for j in range(n):
+            temp = abs(A[i][j] * x[i] - B[i])
+            if(temp > max):
+                max = temp
+            
+    return max
 
 # Fim de funções auxiliares
 # -----------------------------------------------#
 
 # Método de Gauss sem pivoteamento
 def gauss(A, B, n):
-    solucao = np.zeros(n, dtype=np.float16)
+    solucao = np.zeros(n, dtype=np.float128)
     
     A = matriz_aumentada(A, B, n)
     
@@ -238,21 +233,21 @@ def gauss(A, B, n):
             sys.exit('Divisao por zero detectada!')
 
         for j in range(i + 1, n):
-            razao = np.float16(A[j][i]/A[i][i])
+            razao = np.float128(A[j][i]/A[i][i])
 
             for k in range(n + 1):
-                A[j][k] = np.float16(A[j][k] - razao * A[i][k])
+                A[j][k] = np.float128(A[j][k] - razao * A[i][k])
 
     # Substituição regressiva
-    solucao[n - 1] = np.float16(A[n - 1][n]/A[n - 1][n - 1])
+    solucao[n - 1] = np.float128(A[n - 1][n]/A[n - 1][n - 1])
 
     for i in range(n - 2, -1, -1):
-        solucao[i] = np.float16(A[i][n])
+        solucao[i] = np.float128(A[i][n])
 
         for j in range(i + 1, n):
-            solucao[i] = np.float16(solucao[i] - A[i][j] * solucao[j])
+            solucao[i] = np.float128(solucao[i] - A[i][j] * solucao[j])
 
-        solucao[i] = np.float16(solucao[i]/A[i][i])
+        solucao[i] = np.float128(solucao[i]/A[i][i])
 
     return solucao
 
@@ -260,7 +255,7 @@ def gauss(A, B, n):
 # Método de Gauss com pivoteamento
 def gauss_pivoteamento(A, B, n):
     
-    solucao = np.zeros(n, dtype=np.float16)
+    solucao = np.zeros(n, dtype=np.float128)
     
     A = matriz_aumentada(A, B, n)
     
@@ -285,11 +280,11 @@ def gauss_pivoteamento(A, B, n):
 
         for i in range(k + 1, n):
             # fatora f para zerar os elementos abaixo do pivô
-            f = np.float16(A[i][k]/A[k][k])
+            f = np.float128(A[i][k]/A[k][k])
 
             # subtrai a linha do pivô multiplicada pelo fator f
             for j in range(k + 1, n + 1):
-                A[i][j] = np.float16(A[i][j] - f * A[k][j])
+                A[i][j] = np.float128(A[i][j] - f * A[k][j])
 
             # preenche a matriz triangular inferior com zeros
             A[i][k] = 0
@@ -302,19 +297,12 @@ def gauss_pivoteamento(A, B, n):
         # Subtrai os elementos da solução já encontrados
         # j é i + 1 pois os elementos da diagonal principal já foram zerados
         for j in range(i + 1, n):
-            solucao[i] = np.float16(solucao[i] - A[i][j] * solucao[j])
+            solucao[i] = np.float128(solucao[i] - A[i][j] * solucao[j])
 
         # Divide o elemento da solução pelo elemento da diagonal principal
-        solucao[i] = np.float16(solucao[i]/A[i][i])
+        solucao[i] = np.float128(solucao[i]/A[i][i])
 
     return solucao
-
-# Método da Decomposição LU
-
-
-def decomposicao_LU(A, B, n):
-    A = decompoeLU(A, n)
-    return resolveLU(A, B, n)
 
 # Método de Cholesky
 def cholesky(A, B, n):    
@@ -371,61 +359,105 @@ def gauss_seidel(M, B, u, E, max_iteracoes):
         if(erro < E):
             print("Terminou Gauss Seidel com erro de: ", erro)
             return X
+        Xerro = list(X)
 
+    print("Terminou Gauss Seidel com erro de: ", erro)
     print("Gauss Seidel nao convergiu ou precisa de mais iteracoes para convergir")
     return X
 
 #Método Jacobi
-def jacobi(A, B, u, E, max_iteracoes):
-    ordem = len(A)
-    X = np.array(u, np.float64)
-    Xp = np.array(u, np.float64)
-    B = np.array(B, np.float64)
+def jacobi(M, B, u, E, max_iteracoes):
+        
+    ordem = len(M[0])
+    X = list(u)
+    Xerro = list(u)#vetor pra calcular o erro
     passos = 0
-    iteracoes = 0
-    
-    for k in range(max_iteracoes):
-        iteracoes += 1
-        
-        for i in range(ordem):
-            soma = 0.0
-            passos += 1
-            #passa linha pra um array
-            L = np.array(A[i], np.float64)
-            #zera o lugar onde seria o valor da diagonal principal
-            L[i] = 0
-            #faz produto escalar entre os vetores
-            soma = np.dot(L, X)
-            
-            Xp[i] = (1.0 / A[i][i]) * (B[i] - soma)
-            
-        #se atingir o criterio de parada, interrompe e retorna os resultados
-        erro = calculaErro(Xp, X) 
 
-        if(erro < E):
-            print("Terminou Jacobi com erro de: ", erro)
-            return list(Xp)
+    print("ordem da matriz", ordem)
+
+    for k in range(max_iteracoes):
         
-        #prepara proxima iteracao com aproximacao da anterior
-        X = np.array(Xp, np.float64)
-        
-        #Imprime número de iterações de 100 em 100
+        #percorre a matriz
+        for i in range(ordem):
+            #comeca a soma pelo termo do vetor fonte
+            soma = B[i]
+            div = 0
+            for j in range(ordem):
+                passos += 1
+                #separa o divisor
+                if(i==j):
+                    div = M[i][j]
+                else:
+                    soma += M[i][j] * Xerro[j] * -1.0
+            #cria vetor de solucoes para proxima iteracao com resultados da linha
+            X[i] = soma / div
+            
         if(k % 100 == 0):
             print("Jacobi fez " + str(k) + " iteracoes...")
-    
+        
+        #se atingir o criterio de parada, interrompe e retorna os resultados
+        erro = calculaErro(X,Xerro)
+        
+        if(erro < E):
+            print("Terminou Jacobi com erro de: ", erro)
+            return X
+
+        Xerro = list(X)
+
     print("Jacobi nao convergiu ou precisa de mais iteracoes para convergir")
-    return list(Xp)
+    return X
 
 def main():
-    n = 3
-    A = np.array([[2, 4, -2], [4, 9, -3], [-2, -3, 7]], dtype=np.float16)
-    B = np.array([2, 8, 10], dtype=np.float16)
-    solucao = np.zeros(3)
+    questao = int(input("Qual a questão?"))
+    n = int(input('Digite o numero de equacoes: '))
+    A = np.zeros((n, n), dtype=np.float128)
+    B = np.zeros(n, dtype=np.float128)
+    solucao = np.zeros(n, dtype=np.float128)
     
-    solucao = cholesky(A, B, n)
-    solucao = gauss_seidel(A, B, [1.0] * n, 0.001, 5000)
-    pprint.pprint(solucao)
+    if questao == 1:
+        for i in range(n):
+            for j in range(n):
+                A[i][j] = np.float128(1/(i + j + 1))
+            B[i] = np.float128(1/(i + n + 1))  
+    elif questao == 2:
+        k = int(np.sqrt(n))
+        B = 10*np.ones(n)
+        for i in range(0,n):
+            A[i,i] = -4
+        for i in range(0,n-1):
+            A[i+1,i] = 1
+            A[i,i+1] = 1
+        if((i+1)%k ==0):
+            A[i+1,i] = 0
+            A[i,i+1] = 0
+        for i in range(k,n):
+            A[i-k,i] = 1
+            A[i,i-k] = 1
 
+        A = - A*(k-1)**2
 
+    x = int(input('Digite o metodo desejado:\n1 - Gauss com pivoteamento \n2 - Gauss sem pivoteamento \n3 - Decomposicao LU \n4 - Cholesky\n5 - Gauss Seidel\n6 - Jacobi\n'))
+    if x == 1:
+        solucao = gauss_pivoteamento(A, B, n)
+    elif x == 2:
+        solucao = gauss(A, B, n)
+    elif x == 3:
+        solucao = decomposicao_LU(A, B, n)
+    elif x == 4:
+        solucao = cholesky(A, B, n)
+    elif x == 5:
+        solucao = gauss_seidel(A, B, [0.0]*n, 0.01, 1000)
+    elif x == 6:
+        solucao = jacobi(A, B, [0.0]*n, 0.01, 1000)
+    else:
+        print("valor de método incorreto")
+        sys.exit(1)
+
+    xs = np.arange(0, n, 1) 
+    plt.plot(xs, solucao, 'r')  
+    plt.show()
+    
+    print('\nErro: ' + str(maxNorma(A, B, solucao, n)))
+    
 if __name__ == "__main__":
     main()

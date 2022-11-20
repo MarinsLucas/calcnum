@@ -1,0 +1,379 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage{epsfig}
+\usepackage{fancyhdr}
+\usepackage{indentfirst} 
+\usepackage{titlesec}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{listings}
+\usepackage{color}
+
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{
+  language=Python,                
+  basicstyle=\footnotesize,           
+  numbers=left,                   
+  numberstyle=\tiny\color{gray},  
+  stepnumber=2,                             
+  numbersep=5pt,                  
+  backgroundcolor=\color{white},    
+  showspaces=false,               
+  showstringspaces=false,         
+  showtabs=false,                 
+  frame=single,                   
+  rulecolor=\color{black},        
+  tabsize=2,                      
+  captionpos=b,                   
+  breaklines=true,                
+  breakatwhitespace=false,        
+  title=\lstname,                               
+  keywordstyle=\color{blue},          
+  commentstyle=\color{dkgreen},       
+  stringstyle=\color{mauve},     
+}
+
+\pagestyle{empty}
+
+\headheight 40mm      %
+\oddsidemargin 2.0mm  %
+\evensidemargin 2.0mm %
+\topmargin -40mm      %
+\textheight 250mm     %
+\textwidth 160mm      %
+%
+\newcounter{execs}
+\setcounter{execs}{0}
+\newcommand{\exec}[0]{\addtocounter{execs}{1}\item[\textbf{\arabic{execs}.}]}
+
+\fancypagestyle{first}
+{
+\pagestyle{fancy}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PLEASE, EDIT THIS!
+\fancyhead[LO]{\small $3^a$ Lista \\ 
+                DCC008 - Cálculo Numérico  \\
+                \textbf{Entrega: 14 de Outubro de 2018} }
+
+\fancyhead[RO]{\small Universidade Federal de Juiz de Fora - UFJF \\ 
+                Departamento de Ciência da Computação \\
+               \textit{Nome: Thiago de Almeida}\\
+               \textit{Nome: Renan Nunes}}
+
+
+\begin{document}
+\thispagestyle{first}
+
+\noindent \textbf{Obs1.:} antes de resolver os exercícios abaixo, teste cada um dos métodos implementados resolvendo sistemas lineares simples de dimensão $3\times 3$ (use um exemplo dos Slides).
+
+\noindent \textbf{Obs2.:} utilize precisão dupla.
+\begin{itemize}
+
+\exec Resolva o sistema gerado pela questão 2 da $1^a$ Lista utilizando métodos diretos (Thomas, Gauss, LU e Cholesky) e métodos iterativos (Jacobi e Gauss-Seidel). Para este estudo, considere:
+
+\begin{itemize}
+\item Sistemas lineares de diferentes dimensões (ex. 1000, 5000, 10000) a partir do problema resolvido na $1^a$ Lista variando o número de elementos; 
+\item A aplicação do critério das linhas para determinar se os métodos iterativos convergem neste caso;
+\item O tempo de processamento de cada método, direto ou iterativo, para a resolução do sistema e monte uma tabela;
+\item Apresente o critério de parada e a tolerância utilizada para os métodos iterativos;
+\item Comente os resultados obtidos.
+\end{itemize}
+
+
+\text O critério de Parada Utilizado nas implementações é o Erro dos métodos numéricos, com o critério aceitavel de $0,01$. 
+
+\subsection*{Python}
+\begin{lstlisting}
+def normaInfinito(self, x):
+        size = len(x)
+        maximo = abs(x[0])   
+        
+        for i in range(size):
+            temp = abs(x[i])        
+            if(temp > maximo):
+                    maximo = temp
+                
+        return maximo
+        
+    def distanciaInfinito(self, x1, x2):
+        if(len(x1) != len(x2)):
+            print("O tamanho dos vetores x1 e x2 precisa ser o mesmo")
+            return 0
+            
+        size = len(x1)
+        dist = abs(x1[0] - x2[0])  
+        
+        for i in range(size):
+            temp = abs(x1[0] - x2[0])
+            if(dist > temp):
+                temp = dist
+                
+        return dist
+            
+    def calculaErro(self, x_prox, x_atual):
+        return self.distanciaInfinito(x_prox, x_atual) / self.normaInfinito(x_prox)
+    def erroResidual(self, M, X, B):
+        size = len(M[0])
+        erroRet = []
+        for i in range(size):
+            valor = 0
+            for j in range(size):
+                valor += M[i][j] * X[j]
+
+            erroRet.append(abs(valor - B[i]))
+
+        return [erroRet, max(erroRet)]
+\end{lstlisting}
+
+\newpage
+
+\text Para uma Matriz 100x100:
+
+\begin{table}[h]
+\centering
+  \begin{tabular}{l||l|lll}
+    $Metodo$ & $Passos$ & $Tempo$ $de$ $Execução$ \\
+    \hline
+    Thomas (direto) & 9997 & 0:00:00.001998 \\
+    
+    Gauss (direto) & 328251 & 0:00:00.084985 \\
+    
+    Gauss com Pivoteamento Parcial & 338052 & 0:00:00.093985 \\
+    
+    Gauss-Seidel (interativo) &  &  \\
+    
+    LU &  \\
+    
+    Choleski & \\
+    
+    Jacobi (interativo) & & 0:00:00.020997 \\
+    \hline
+  \end{tabular}
+  \caption{Matriz 100x100}
+\end{table}
+
+
+\begin{figure}[!htb]
+\includegraphics [width=7cm,height=7cm]{G100part.png}
+\includegraphics [width=7cm,height=7cm]{T100part}
+\includegraphics [width=7cm,height=7cm]{GP100part.png}
+\includegraphics [width=7cm,height=7cm]{J100part.png}
+\end{figure}
+
+\newpage
+
+\text Para uma matriz 1000x1000:
+
+\begin{table}[h]
+\centering
+  \begin{tabular}{l||l|lll}
+    $Metodo$ & $Passos$ & $Tempo$ $de$ $Execução$ \\
+    \hline
+    Thomas (direto) & 999997  & 0:00:00.232961 \\
+    
+    Gauss (direto) & 332832501 & 0:01:37.112041 \\
+    
+    Gauss com Pivoteamento Parcial & 333830502 & 0:01:32.923215 \\
+    
+    Gauss-Seidel (interativo) &  &  0:00:01.087303 \\
+    
+    LU &  \\
+    
+    Choleski & \\
+    
+    Jacobi (interativo) & &  \\
+    \hline
+  \end{tabular}
+  \caption{Matriz 1000x1000}
+\end{table}
+
+\begin{figure}[!htb]
+\includegraphics[width=7cm,height=7cm]{G1000part.png}
+\includegraphics [width=7cm,height=7cm]{T1000part}
+\includegraphics [width=7cm,height=7cm]{GP1000part.png}
+\includegraphics [width=7cm,height=7cm]{J1000part.png}
+\end{figure}
+
+
+\newpage
+
+\text Para uma matriz 2000x2000:
+
+\begin{table}[h]
+\centering
+  \begin{tabular}{l||l|lll}
+    $Metodo$ & $Passos$ & $Tempo$ $de$ $Execução$ \\
+    \hline
+    Thomas (direto) & 2664665001  & 0:11:12.355602 \\
+    
+    Gauss (direto) & 332832501 & 0:01:37.112041 \\
+    
+    Gauss com Pivoteamento Parcial & 2668661002 & 0:12:07.371103 \\
+    
+    Gauss-Seidel (interativo) & 59940015  &  0:00:15.697584 \\
+    
+    LU &  \\
+    
+    Choleski & \\
+    
+    Jacobi (interativo) & &  \\
+    \hline
+  \end{tabular}
+  \caption{Matriz 2000x2000}
+\end{table}
+
+
+\begin{figure}[!htb]
+\includegraphics[width=7cm,height=7cm]{G2000part.png}
+\includegraphics [width=7cm,height=7cm]{T2000part}
+\includegraphics [width=7cm,height=7cm]{GP2000part.png}
+\includegraphics [width=7cm,height=7cm]{J2000part.png}
+\end{figure}
+
+\newpage
+\exec Seja o sistema linear:
+$$
+\mathbf{A}\mathbf{x}=\mathbf{b}
+$$
+onde,
+$$
+\mathbf{A} = A_{i,j} = \dfrac{1}{i+j+1} \quad \mbox{e} \quad \mathbf{b}=b_i =\dfrac{1}{i+n+1} .
+$$
+Supondo a matriz $\mathbf{A}_{n\times n}$, com diferentes dimensões $n$ (ex. $n = 10, 100, 1000$),  faça:
+
+\begin{itemize}
+\item Resolva utilizando o método de eliminação de Gauss \textbf{sem} e \textbf{com} pivoteamento e a decomposição LU.
+
+\item Determine o erro cometido, por cada um dos métodos utilizados, através do resíduo calculado na norma do máximo, dado por:
+$$
+\|\mathbf{A}\mathbf{x} - \mathbf{b}\|_{\infty} = \max_{1\leq i\leq n}|A_{i,j}x_{i} - b_{i}|, \quad \forall j \in [1,n]
+$$
+onde $x_{i}$ é o vetor solução. Compare e discuta os resultados.
+
+\end{itemize}
+
+
+\end{itemize}
+
+\text Supondo matrizes de dimensões 10,100 e 1000;
+Para 100:
+\begin{table}[h]
+\centering
+  \begin{tabular}{l||l|l|l}
+     & $ Gauss$ & $Gauss$ $com$ $Pivoteamento$ $Parcial$ & $LU$ \\
+    \hline
+    
+    PASSOS & 338250 & 348250 & \\
+    
+    TEMPO DE EXECUÇÃO &  0:00:00.156041 & 0:00:00.100983 & \\
+    
+    \hline
+  \end{tabular}
+  \caption{Comparação de resultados de diferentes dimensões}
+\end{table}
+
+\begin{table}[h]
+\centering
+  \begin{tabular}{l||l|l|l}
+     & $ Gauss$ & $Gauss$ $com$ $Pivoteamento$ $Parcial$ & $LU$ \\
+    \hline
+    
+    Erro Max & 59153715.99267997 & 3.9898639947466563e-17 & \\
+    
+    
+    \hline
+  \end{tabular}
+  \caption{Comparação de erros}
+\end{table}
+
+\begin{figure}[!htb]
+\includegraphics[width=7cm,height=7cm]{EGauss100part.png}
+\includegraphics [width=7cm,height=7cm]{EGaussP100part.png}
+\includegraphics [width=7cm,height=7cm]{}
+\end{figure}
+
+\newpage
+Para 10 elementos:
+
+\begin{table}[h]
+\centering
+  \begin{tabular}{l||l|l|l}
+     & $ Gauss$ & $Gauss$ $com$ $Pivoteamento$ $Parcial$ & $LU$ \\
+    \hline
+    
+    PASSOS & 375 & 475 & \\
+    
+    TEMPO DE EXECUÇÃO & 0:00:00.000989 & 0:00:00.000997 & \\
+    
+    \hline
+  \end{tabular}
+  \caption{Comparação de resultados de diferentes dimensões}
+\end{table}
+
+\begin{table}[h]
+\centering
+  \begin{tabular}{l||l|l|l}
+     & $ Gauss$ & $Gauss$ $com$ $Pivoteamento$ $Parcial$ & $LU$ \\
+    \hline
+    
+    Erro Max & 27717.293488028645 & 2.7755575615628914e-16 & \\
+    
+    
+    \hline
+  \end{tabular}
+  \caption{Comparação de erros}
+\end{table}
+
+\begin{figure}[!htb]
+\includegraphics[width=7cm,height=7cm]{EGauss10part.png}
+\includegraphics [width=7cm,height=7cm]{EGaussP10part.png}
+\includegraphics [width=7cm,height=7cm]{}
+\end{figure}
+
+\newpage
+Para 1000 elementos:
+
+\begin{table}[h]
+\centering
+  \begin{tabular}{l||l|l|l}
+     & $ Gauss$ & $Gauss$ $com$ $Pivoteamento$ $Parcial$ & $LU$ \\
+    \hline
+    
+    PASSOS & 333832500 & 334832500 & \\
+    
+    TEMPO DE EXECUÇÃO &  0:01:33.369046 & 0:01:27.377436 & \\
+    
+    \hline
+  \end{tabular}
+  \caption{Comparação de resultados de diferentes dimensões}
+\end{table}
+
+\begin{table}[h]
+\centering
+  \begin{tabular}{l||l|l|l}
+     & $ Gauss$ & $Gauss$ $com$ $Pivoteamento$ $Parcial$ & $LU$ \\
+    \hline
+    
+    Erro Max & 140669356.34659576 & 1.9081958235744878e-17 & \\
+    
+    
+    \hline
+  \end{tabular}
+  \caption{Comparação de erros}
+\end{table}
+
+\begin{figure}[!htb]
+\includegraphics[width=7cm,height=7cm]{EGauss1000part.png}
+\includegraphics [width=7cm,height=7cm]{EGaussP1000part.png}
+\includegraphics [width=7cm,height=7cm]{}
+\end{figure}
+
+
+\end{document}
