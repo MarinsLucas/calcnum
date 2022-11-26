@@ -3,9 +3,16 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pprint
 
 def calcErro(exata, aprox):
     return max(abs(exata - aprox))
+
+def taxaConvergencia(erro, pontos):
+    taxa = []
+    for i in range(0, len(pontos)-1):
+        taxa.append((np.log(erro[i+1]) - np.log(erro[i])) / (np.log(pontos[i+1]) - np.log(pontos[i])))
+    return taxa
 
 def cooling(T0, k, T_m, dt, npoints, type):
     T = np.zeros(npoints)
@@ -36,49 +43,67 @@ def eraseData():
 
 def main():
     #dados do enunciado 
-    T0 = np.float128(99)   #temperatura inicial
-    k = np.float128(0.0358)  #coeficiente de transferência de calor 
-    T_m = np.float128(27)  #temperatura final
-    t_ini = np.float128(0) #tempo inicial
-    t_end = np.float128(50) #tempo final
+    T0 = np.float16(99)   #temperatura inicial
+    k = np.float16(0.0358)  #coeficiente de transferência de calor 
+    T_m = np.float16(27)  #temperatura final
+    t_ini = np.float16(0) #tempo inicial
+    t_end = np.float16(50) #tempo final
     ref = 5
+    vPoints = []
+    erroExp = []
+    erroImp = []
+    erroCN = []
     
     eraseData()
 
     for it in range(0, ref):
-        npoints = 3**(it+1)+1
+        npoints = 4**(it+1)
+        vPoints.append(npoints)
 
-        t = np.float128(np.linspace(t_ini, t_end, npoints))
+        t = np.float16(np.linspace(t_ini, t_end, npoints))
+        exata = ((T0 - T_m)*np.exp(-k*t)  + T_m)
         dt = (t_end-t_ini)/(npoints)
 
         T = cooling(T0, k, T_m, dt, npoints, 1)
-        print("Exata Eulere: " + str(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T)))
-        plt.plot(t, T, '-*')
+        erroExp.append(calcErro(exata, T))
+        #print("Exata Eulere: " + str(calcErro(exata, T)))
+        # plt.plot(t, T, '-*')
         
         T = cooling(T0, k, T_m, dt, npoints, 2)
-        print("Exata Euleri: " + str(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T)))
-        plt.plot(t, T, '-o')
+        erroImp.append(calcErro(exata, T))
+        #print("Exata Euleri: " + str(calcErro(exata, T)))
+        # plt.plot(t, T, '-o')
 
         T = cooling(T0, k, T_m, dt, npoints, 3)
-        print("Exata Cranck-Nicolson: " + str(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T)))
-        plt.plot(t, T, '-^')
+        erroCN.append(calcErro(exata, T))
+        #print("Exata Cranck-Nicolson: " + str(calcErro(exata, T)))
+        # plt.plot(t, T, '-^')
 
         tt = np.linspace(t_ini, t_end, 200)
-        plt.plot(tt, ((T0 - T_m)*np.exp(-k*tt)) + T_m, '--')
+        # plt.plot(tt, ((T0 - T_m)*np.exp(-k*tt)) + T_m, '--')
         
-        print("Delta Time " + str(dt))
+        #print("Delta Time " + str(dt))
 
-        plt.legend(['Euler Explícito', 'Euler Implícito',
-                'Crank-Nicolson', 'Exato'])
+        """ plt.legend(['Euler Explícito', 'Euler Implícito',
+                'Crank-Nicolson', 'Exato']) """
 
-        plt.xlabel('tempo (s)')
+        """ plt.xlabel('tempo (s)')
         plt.ylabel('temperatura (C)')
         plt.title('Resfriamento de Newton')
         plt.grid()
-        plt.show()
+        plt.show() """
 
-        writeData(t, ((T0 - T_m)*np.exp(-k*t)  + T_m)  , cooling(T0, k, T_m, dt, npoints, 1),\
+        writeData(t, exata, cooling(T0, k, T_m, dt, npoints, 1),\
              cooling(T0, k, T_m, dt, npoints, 2), cooling(T0, k, T_m, dt, npoints, 3))
+    
+    taxa_imp = taxaConvergencia(erroImp, vPoints)
+    taxa_exp = taxaConvergencia(erroExp, vPoints)
+    taxa_cn = taxaConvergencia(erroCN, vPoints)
+    
+    pprint.pprint(taxa_imp)
+    pprint.pprint(taxa_exp)
+    pprint.pprint(taxa_cn)
+    
 
 if __name__ == "__main__":
     main()
