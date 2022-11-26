@@ -1,0 +1,138 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage{epsfig}
+\usepackage{fancyhdr}
+\usepackage{indentfirst} 
+\usepackage{titlesec}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage[left=2.5cm,top=2.5cm,right=2.5cm,bottom=2cm]{geometry}
+
+\usepackage
+
+
+\oddsidemargin 2.0mm  %
+\textwidth 160mm      %
+%
+\newcounter{execs}
+\setcounter{execs}{0}
+\newcommand{\exec}[0]{\addtocounter{execs}{1}\item[\textbf{\arabic{execs}.}]}
+
+\fancypagestyle{first}
+{
+\pagestyle{fancy}
+}
+
+\fancyhead[LO]{\small $1^a$ Lista \\ 
+                DCC008 - Cálculo Numérico  \\ }
+
+\fancyhead[RO]{\small Universidade Federal de Juiz de Fora - UFJF \\ 
+                \textit{Jonatas Dias Machado Costa - 202165077AC}\\
+               \textit{Lucas Marins Ramalho de Lima - 202165555C}}\\
+
+\begin{document}
+\thispagestyle{first}
+
+\begin{itemize}
+
+\exec Seja o problema de valor incial associado a lei de resfriamento de Newton:
+
+\begin{eqnarray} \label{N}
+\begin{cases}
+
+\dfrac{d \theta}{d t} = -K(\theta - \theta_m)\\ 
+\theta(0) = \theta_0
+
+\end{cases}, 
+\quad t\in [0,T]
+\end{eqnarray}
+
+A solução exata para o problema \eqref{N} é dada por:
+\begin{equation}\label{solexatN}
+\theta(t) = (\theta_0 - \theta_m) e^{-Kt} + \theta_m
+\end{equation}
+
+\begin{itemize}
+\item[(a)] Apresentação das discretizações por diferenças finitas para aproximar o problema \eqref{N}:
+\begin{itemize}
+
+\item Euler Explícito:
+\begin{eqnarray}
+    \dfrac{d \theta}{d t} &=& -k(\theta - \theta_m)
+    \Rightarrow \\ 
+    \frac{\theta(t  + \Delta t) - \theta(t)}{\Delta t} &=&  -k(\theta - \theta_m)
+    \Rightarrow \\ 
+    \theta (t + \Delta t) &=& -k * \Delta t (\theta - \theta_m) + \theta (t)
+    \Rightarrow \\  
+     \theta_i_+_1 &=& -\Delta t*k(\theta_i - \theta_m) + \theta_i
+ \end{eqnarray}
+	
+
+\item Euler Implícito:
+
+\begin{eqnarray}
+\theta_i_+_1 &=& -k*\Delta t (\theta_i_+_1 - \theta_m) + \theta_i 
+\Rightarrow \\
+\theta_i_+_1 &=& \theta_i  + k* \Delta t*\theta_m  - k*\Delta t *\theta_i_+_1
+\Rightarrow \\ 
+\theta_i_+_1 + k*\Delta t*\theta_i_+_1 &=& \theta_i + k *\Delta t *\theta_m
+\Rightarrow \\
+\theta_i_+_1 * (1+k* \Delta t) &=& (\theta_i + k * \Delta t * \theta_m)
+\Rightarrow \\
+\theta_i_+_1 &=& \frac{(\theta_i + k * \Delta t * \theta_m)}{(1 + k* \Delta t)} \\
+\end{eqnarray}
+
+\item Crank-Nicolson:
+
+\begin{eqnarray}
+    \frac{\theta_i_+_\frac{1}{2} - \theta_i}{\frac{\Delta t}{2}} &=& -k(\theta_i - \theta_m)
+    \Rightarrow \\
+    \frac{2*(\theta_i_+_1 - \theta_i)}{\Delta t} &=& -k * (\theta_i_+_1 + \theta_i  - 2*\theta_m) 
+    \Rightarrow \\
+    \theta_i_+_1 &=& \frac{-k * \Delta t * \theta_i_+_1}{2} - \frac{k * \Delta t * \theta_i}{2} + k * \theta_i * \Delta t + \theta_i
+    \Rightarrow\\
+    \theta_i_+_1 &=& (-\frac{k}{2}*\Delta t * (\theta_i - 2\theta_m) + \theta_i) / (1 + \frac{k*\Delta t}{2})
+\end{eqnarray}
+\end{itemize}
+
+ \newpage
+ 
+ \item[(b)] Tomando $K=0,035871952$ $min^{-1}$, $\theta_0=99$ $^oC$ e $\theta_m=27$ $^oC$ é possível construir gráficos comparando a solução exata \eqref{solexatN} com a aproximada obtida pelas discretizações do item (a) no intervalo $[0,50]$, como observado abaixo
+\begin{figure}[h]
+\caption{Comparativo dos métodos de aproximação com a resposta exata}
+\centering
+  \includegraphics[width=7cm]{./refinamento2.png} 
+  \includegraphics[width = 7cm]{./refinamento3.png}
+\end{figure}
+
+\item
+\textbf{Obs.:} Nos gráficos acima, observa-se duas iterações dos métodos. Nessas iterações, tem-se o valor de $\Delta t$ = 5.00s e $\Delta t$ = 1.79s respectivamente. Esse valor é calculado a partir da divisão do tempo total de experimento pelo número de pontos a serem calculados em cada iteração. O número de pontos de cada iteração, por sua vez, é calculado a partir da seguinte expressão: nºpontos = 3**(it+1)+1 sendo it o número da iteração. Dessa forma, como o valor de $\Delta t$ é sempre o mesmo em todos os métodos, é possível fazer a observação do comportamento de cada método e de suas condições de estabilidade. No euler explícito, temos a condição de estabilidade para o $\Delta t$ < 1/k (no caso estudado atualmente $\Delta t$ < 27,876932931s). O euler implícito é incondicionalmente estável. O Cranck-Nicolson possui condição de estabilidade $\Delta t$ < 2/K (no atual experimento $\Delta t$ < 55,753865862s).
+
+
+ 
+ \item[(c)] A partir da escolha de um único $\Delta t$ que cumpre ao mesmo tempo a condição de estabilidade dos 3 métodos, foi calculado o erro entre a solução exata e a aproximada na norma do máximo $\|\theta(t_n) - \theta^n\|_{\infty}$.\\\\
+ Euler Explícito: 0.2953981326511468039\\
+Euler Implícito: 0.289990023693066451\\
+ Cranck-Nicolson: 0.0021919746887888238995\\
+ \\ 
+ Esse erro foi obtido após 4 (quatro) refinamentos (82 pontos) através do cálculo supracitado. A partir dos resultados, é possível observar que a precisão da aproximação do método Cranck-Nicolson é bastante superior, já que a grandeza de seu erro é log(e) = -3, enquanto as demais possuem log(e) = -1. Dentre o euler explícito e implícito, nota-se uma pequena diferença já na segunda casa decimal. \\
+ 
+ \item[(d)] Os resultados dos itens (b) e (c) podem variar adotando precisão simples ou dupla na declaração das variáveis, isso se deve ao erro de variação de ponto flutuante instrínseco da expressão de números reais em computadores. A estrutura de uma variável de precisão simples é diferente da de precisão dupla, o que causa uma pequena diferença nas últimas casas decimais que, em grande escala, pode acarretar imprecisões maiores. No cálculo em questão, as diferenças foram representadas na tabela a seguir:
+ 
+\begin{table}[h]
+\caption{Comparação de precisão dos dados}
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+Precisão & Exata             & Euler Explícito    & Euler Implícito   & Cranck-Nicolson   \\ \hline
+float32  & 56.419746         & 48.97845120331945  & 61.36333933123038 & 57.66649059227325 \\ \hline
+float64    & 56.41974710214109 & 48.978449999999995 & 61.36333861311712 & 57.66648980695312 \\ \hline
+\end{tabular}
+\end{table}
+
+
+\end{itemize}
+\end{itemize}
+
+\end{document}

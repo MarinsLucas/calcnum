@@ -8,18 +8,17 @@ def calcErro(exata, aprox):
     return max(abs(exata - aprox))
 
 def cooling(T0, k, T_m, dt, npoints, type):
-    k *= -1
     T = np.zeros(npoints)
     T[0] = T0
     for i in range(npoints-1):
         if type == 1:
-            T[i+1] = dt*k*(T[i] - T_m) + T[i]  # Euler Explícito
+            T[i+1] = -dt*k*(T[i] - T_m) + T[i]  # Euler Explícito
 
         elif type == 2:
-            T[i+1] = (T[i] - k * dt * T_m)/(1-k*dt)  # Euler Implícito
+            T[i+1] = (T[i] + k * dt * T_m)/(1+k*dt)  # Euler Implícito
 
         elif (type == 3):  
-            T[i+1] = T[i] + dt*k * (T[i] + (1/2)*dt*k*(T[i] - T_m) - T_m)  # Crank-Nicolson
+            T[i+1] = (-k/2 *dt*(T[i] - 2*T_m) + T[i])/(1 + (k*dt)/2)
     return T
 
 def writeData(x, exata, eulere, euleri, cranckn):
@@ -50,12 +49,12 @@ def main():
         npoints = 3**(it+1)+1
 
         t = np.float128(np.linspace(t_ini, t_end, npoints))
-        dt = (t_end-t_ini)/(npoints-1)
+        dt = (t_end-t_ini)/(npoints)
 
         T = cooling(T0, k, T_m, dt, npoints, 1)
         print("Exata Eulere: " + str(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T)))
         plt.plot(t, T, '-*')
-
+        
         T = cooling(T0, k, T_m, dt, npoints, 2)
         print("Exata Euleri: " + str(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T)))
         plt.plot(t, T, '-o')
@@ -66,6 +65,8 @@ def main():
 
         tt = np.linspace(t_ini, t_end, 200)
         plt.plot(tt, ((T0 - T_m)*np.exp(-k*tt)) + T_m, '--')
+        
+        print("Delta Time " + str(dt))
 
         plt.legend(['Euler Explícito', 'Euler Implícito',
                 'Crank-Nicolson', 'Exato'])
