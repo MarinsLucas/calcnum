@@ -7,6 +7,12 @@ import numpy as np
 def calcErro(exata, aprox):
     return max(abs(exata - aprox))
 
+def taxaConvergencia(erro, pontos):
+    taxa = []
+    for i in range(0, len(pontos)-1):
+        taxa.append((np.log(erro[i+1]) - np.log(erro[i])) / (np.log(pontos[i+1]) - np.log(pontos[i])))
+    return taxa
+
 def cooling(T0, k, T_m, dt, npoints, type):
     T = np.zeros(npoints)
     T[0] = T0
@@ -43,25 +49,33 @@ def main():
     t_end = np.float128(50) #tempo final
     ref = 5
     
+    erroEe = []
+    erroEi = []
+    erroCn = []
+    dtt = []
     eraseData()
 
     for it in range(0, ref):
         npoints = 3**(it+1)+1
 
         t = np.float128(np.linspace(t_ini, t_end, npoints))
-        dt = (t_end-t_ini)/(npoints)
+        dt = (t_end-t_ini)/(npoints-1)
+        dtt.append(dt)
 
         T = cooling(T0, k, T_m, dt, npoints, 1)
         print("Exata Eulere: " + str(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T)))
         plt.plot(t, T, '-*')
+        erroEe.append(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T))
         
         T = cooling(T0, k, T_m, dt, npoints, 2)
         print("Exata Euleri: " + str(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T)))
         plt.plot(t, T, '-o')
+        erroEi.append(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T))
 
         T = cooling(T0, k, T_m, dt, npoints, 3)
         print("Exata Cranck-Nicolson: " + str(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T)))
         plt.plot(t, T, '-^')
+        erroCn.append(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T))
 
         tt = np.linspace(t_ini, t_end, 200)
         plt.plot(tt, ((T0 - T_m)*np.exp(-k*tt)) + T_m, '--')
@@ -79,6 +93,19 @@ def main():
 
         writeData(t, ((T0 - T_m)*np.exp(-k*t)  + T_m)  , cooling(T0, k, T_m, dt, npoints, 1),\
              cooling(T0, k, T_m, dt, npoints, 2), cooling(T0, k, T_m, dt, npoints, 3))
+    plt.plot(-np.log(dtt),np.log(erroEe), '-*')
+    plt.plot(-np.log(dtt),np.log(erroEi),'-o')
+    plt.plot(-np.log(dtt),np.log(erroCn),'-^')
+    plt.grid()
+    plt.legend(['Euler Explícito', 'Euler Implícito','Crank-Nicolson'])
+    plt.xlabel('-log(h)')
+    plt.ylabel('log(erro)')
+    print("Taxas de convergência:")
+    print("Euler Explícito " + str((np.log(erroEe[-1])-np.log(erroEe[0]))/(np.log(dtt[-1])-np.log(dtt[0]))))
+    print("Euler Implícito " + str((np.log(erroEi[-1])-np.log(erroEi[0]))/(np.log(dtt[-1])-np.log(dtt[0]))))
+    print("Cranck-Nicolson " + str((np.log(erroCn[-1])-np.log(erroCn[0]))/(np.log(dtt[-1])-np.log(dtt[0]))))
 
+    plt.show()
+    
 if __name__ == "__main__":
     main()
