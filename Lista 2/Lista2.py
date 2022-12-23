@@ -28,20 +28,7 @@ def troca_linha(A, i, j, n):
         A[i][k] = A[j][k]
         A[j][k] = temp
 
-
-def normaMaximo(x):
-    size = len(x)
-    maximo = abs(x[0])
-
-    for i in range(size):
-        temp = abs(x[i])
-        if (temp > maximo):
-            maximo = temp
-
-    return maximo
-
-
-def distanciaMaximo(x1, x2):
+""" def distanciaMaximo(x1, x2):
     if (len(x1) != len(x2)):
         print("O tamanho dos vetores x1 e x2 precisa ser o mesmo")
         return 0
@@ -54,11 +41,11 @@ def distanciaMaximo(x1, x2):
         if (temp > dist):
             dist = temp
 
-    return dist
+    return dist """
 
 
 def calculaErro(x_prox, x_atual):
-    return distanciaMaximo(x_prox, x_atual) / normaMaximo(x_prox)
+    return np.max(np.abs(x_prox + np.multiply(x_atual,-1.0)))/np.max(np.array(x_prox))
 
 
 def substituicao_regressiva(M, B, n):
@@ -364,7 +351,7 @@ def gauss_seidel(M, B, u, E, max_iteracoes):
             print("Gauss-Seidel fez " + str(k) + " iteracoes...")
 
         #se atingir o criterio de parada, interrompe e retorna os resultados
-        erro = calculaErro(X, Xerro)
+        #erro = calculaErro(X, Xerro) #Esse erro é relativo ou não?
 
         if (erro < E):
             print("Terminou Gauss Seidel com erro de: ", erro)
@@ -396,7 +383,6 @@ def jacobi(M, B, u, E, max_iteracoes):
             soma = B[i]
             div = 0
             for j in range(ordem):
-                passos += 1
                 #separa o divisor
                 if (i == j):
                     div = M[i][j]
@@ -409,10 +395,12 @@ def jacobi(M, B, u, E, max_iteracoes):
             print("Jacobi fez " + str(k) + " iteracoes...")
 
         #se atingir o criterio de parada, interrompe e retorna os resultados
-        erro = calculaErro(X, Xerro)
-
+        #erro = calculaErro(X, Xerro) #Erro relativo!
+        erro = maxNorma(M, B, X, ordem) #erro absoluto
+        
         if (erro < E):
             print("Terminou Jacobi com erro de: ", erro)
+            print("Depois de ter feito " ,k, "iterações")
             return X
 
         Xerro = list(X)
@@ -479,7 +467,7 @@ def main():
         end = time.time()
     elif x == 6:
         start = time.time()
-        solucao = jacobi(A, B, [0.0] * n, 0.01, 1000)
+        solucao = jacobi(A, B, [0.0] * n, 10e-6, 1000000000)
         end = time.time()
     else:
         print("valor de método incorreto")
