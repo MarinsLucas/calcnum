@@ -35,6 +35,31 @@ void imprimeVetor(Vector A){
     cout << endl;
 }
 
+void DrawGraphic(Vector solucao, int n)
+{
+    RGBABitmapImageReference *imageReference = CreateRGBABitmapImageReference();
+    StringReference *errorMessage = CreateStringReferenceLengthValue(0, L' ');
+    Vector xs; 
+    for(int i =0; i<n; i++)
+    {
+        xs.push_back(i);
+    }
+    bool success = DrawScatterPlot(imageReference, 1080, 720, &xs,&solucao, errorMessage);
+    if(success){
+		vector<double> *pngdata = ConvertToPNG(imageReference->image);
+		WriteToFile(pngdata, "example1.png");
+		DeleteImage(imageReference->image);
+	}else{
+		cerr << "Error: ";
+		for(wchar_t c : *errorMessage->string){
+			wcerr << c;
+		}
+		cerr << endl;
+	}
+
+	FreeAllocations();
+}
+
 void imprimeMatriz(Matrix A)
 {
     for (int i = 0; i < A.size(); i++)
@@ -757,31 +782,12 @@ int main()
     
     auto diff = chrono::duration_cast<chrono::microseconds>(end - start).count();
     double seconds = diff / 1e6;
-
+    DrawGraphic(solucao, n);   
+    
     std::cout << "\nErro: " << maxNorma(A, B, solucao, n) << endl;
     std::cout << "\nTempo percorrido: " << seconds << " segundos" << endl;
     
-    RGBABitmapImageReference *imageReference = CreateRGBABitmapImageReference();
-    StringReference *errorMessage = CreateStringReferenceLengthValue(0, L' ');
-    Vector xs; 
-    for(int i =0; i<n; i++)
-    {
-        xs.push_back(i);
-    }
-    bool success = DrawScatterPlot(imageReference, 1080, 720, &xs,&solucao, errorMessage);
-    if(success){
-		vector<double> *pngdata = ConvertToPNG(imageReference->image);
-		WriteToFile(pngdata, "example1.png");
-		DeleteImage(imageReference->image);
-	}else{
-		cerr << "Error: ";
-		for(wchar_t c : *errorMessage->string){
-			wcerr << c;
-		}
-		cerr << endl;
-	}
 
-	FreeAllocations();
     
 
     

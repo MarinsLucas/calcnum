@@ -202,7 +202,7 @@ def decomposicao_LU(M, B, n):
     for i in range(1, ordem):
         soma = 0.0
         for j in range(i):
-            soma += L[i][0:i] * y[0:i]
+            soma += L[i][j] * y[j]
         y[i] = (B[i] - soma) / L[i][i]
 
     # Resolucao U * x = y
@@ -224,15 +224,7 @@ def erro(A, B, x, n):
 
 
 def maxNorma(A, B, x, n):
-    max = 0
-
-    for i in range(n):
-        for j in range(n):
-            temp = abs(A[i][j] * x[i] - B[i])
-            if (temp > max):
-                max = temp
-
-    return max
+    return np.max(np.abs(np.dot(A, x) - B))
 
 
 # Fim de funções auxiliares
