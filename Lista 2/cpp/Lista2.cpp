@@ -445,7 +445,7 @@ Vector gauss_pivoteamento(Matrix A, Vector B, int n)
             }
         }
 
-        if (!A[k][i_max])
+        if (A[k][i_max] == 0)
         { // Se o pivô for zero
             std::cout << "Divisao por zero detectada!" << endl;
             exit(1);
@@ -644,9 +644,6 @@ int main()
     Vector solucao(n, 0.0);
     std::chrono::_V2::system_clock::time_point start, end;
 
-
-    for (int x = 1; x < 7; x++)
-    {
         if (questao == 1)
         {
             for (int i = 0; i < n; i++)
@@ -785,8 +782,10 @@ int main()
 	}
 
 	FreeAllocations();
-    }
+    
 
     
     return 0;
 }
+
+

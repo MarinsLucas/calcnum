@@ -144,7 +144,7 @@ def matriz_aumentada(A, B, n):
     for i in range(n):
         for j in range(n):
             M[i][j] = A[i][j]
-
+    
     for i in range(n):
         M[i][n] = B[i]
 
@@ -159,11 +159,8 @@ def decompoeLU(M, n):
     U = np.zeros((n, n), dtype=np.float128)
 
     #print(type(M[0]))
-
-    for j in range(ordem):
-        U[0][j] = M[0][j]
-    for i in range(ordem):
-        L[i][0] = M[i][0] / U[0][0]
+    U[0][0:ordem] = M[0][0:ordem]
+    L[0:ordem][0] = M[0:ordem][0] / U[0][0]
 
     for i in range(ordem):
         #Calcula L
@@ -205,7 +202,7 @@ def decomposicao_LU(M, B, n):
     for i in range(1, ordem):
         soma = 0.0
         for j in range(i):
-            soma += L[i][j] * y[j]
+            soma += L[i][0:i] * y[0:i]
         y[i] = (B[i] - soma) / L[i][i]
 
     # Resolucao U * x = y
@@ -217,10 +214,9 @@ def decomposicao_LU(M, B, n):
         x[i] = soma / U[i][i]
     return x
 
-
+#FIXME: NÃO SEI SE ESTÁ FUNCIONANDO, NÃO CONSEGUI
 def erro(A, B, x, n):
     X = np.zeros(n)
-
     for i in range(n):
         for j in range(n):
             X[i] = abs(A[i][j] * x[i] - B[i])
@@ -497,9 +493,9 @@ def main():
         print("valor de método incorreto")
         sys.exit(1)
 
-    #xs = np.arange(0, n, 1)
-    #plt.plot(xs, solucao, 'b')
-    #plt.show()
+    xs = np.arange(0, n, 1)
+    plt.plot(xs, solucao, 'b')
+    plt.show()
 
     print('\nErro: ' + str(maxNorma(A, B, solucao, n)))
     print('\nElapsed Time ' + str(end - start))
