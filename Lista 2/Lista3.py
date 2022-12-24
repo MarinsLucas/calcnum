@@ -326,10 +326,7 @@ def gauss_seidel(M, B, u, E, max_iteracoes):
 
     ordem = len(M[0])
     X = list(u)
-    Xerro = list(u)  #vetor pra calcular o erro
-    passos = 0
-
-    print("ordem da matriz", ordem)
+    #Xerro = list(u)  #vetor pra calcular o erro relativo
 
     for k in range(max_iteracoes):
 
@@ -351,17 +348,17 @@ def gauss_seidel(M, B, u, E, max_iteracoes):
             print("Gauss-Seidel fez " + str(k) + " iteracoes...")
 
         #se atingir o criterio de parada, interrompe e retorna os resultados
-        #erro = calculaErro(X, Xerro) #Esse erro é relativo ou não?
+        #erro = calculaErro(X, Xerro) #erro relativo 
+        erro = maxNorma(M,B,X,ordem) #erro absoluto
 
         if (erro < E):
             print("Terminou Gauss Seidel com erro de: ", erro)
+            print("Fazendo ", k, "iterações")
             return X
-        Xerro = list(X)
 
-    print("Terminou Gauss Seidel com erro de: ", erro)
-    print(
-        "Gauss Seidel nao convergiu ou precisa de mais iteracoes para convergir"
-    )
+        #Xerro = list(X)
+
+    print("Gauss Seidel nao convergiu ou precisa de mais iteracoes para convergir")
     return X
 
 
@@ -369,9 +366,8 @@ def gauss_seidel(M, B, u, E, max_iteracoes):
 def jacobi(M, B, u, E, max_iteracoes):
 
     ordem = len(M[0])
-    X = list(u)
-    Xerro = list(u)  #vetor pra calcular o erro
-    passos = 0
+    X = u
+    Xerro = u  #vetor pra calcular o erro
 
     print("ordem da matriz", ordem)
 
@@ -392,7 +388,7 @@ def jacobi(M, B, u, E, max_iteracoes):
             X[i] = soma / div
 
         if (k % 100 == 0):
-            print("Jacobi fez " + str(k) + " iteracoes...")
+            print("Jacobi fez " + str(k) + " iteracoes...") 
 
         #se atingir o criterio de parada, interrompe e retorna os resultados
         #erro = calculaErro(X, Xerro) #Erro relativo!
@@ -402,8 +398,6 @@ def jacobi(M, B, u, E, max_iteracoes):
             print("Terminou Jacobi com erro de: ", erro)
             print("Depois de ter feito " ,k, "iterações")
             return X
-
-        Xerro = list(X)
 
     print("Jacobi nao convergiu ou precisa de mais iteracoes para convergir")
     return X
@@ -463,11 +457,11 @@ def main():
         end = time.time()
     elif x == 5:
         start = time.time()
-        solucao = gauss_seidel(A, B, [0.0] * n, 0.01, 1000)
+        solucao = gauss_seidel(A, B, [0.0] * n, 10e-8, 2212)
         end = time.time()
     elif x == 6:
         start = time.time()
-        solucao = jacobi(A, B, [0.0] * n, 10e-6, 1000000000)
+        solucao = jacobi(A, B, [0.0] * n, 10e-8, 2212)
         end = time.time()
     else:
         print("valor de método incorreto")
