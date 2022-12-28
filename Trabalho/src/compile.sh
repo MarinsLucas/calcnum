@@ -1,1 +1,1 @@
-g++ *.cpp -o output.exe -lm && ./output.exe
+g++ *.cpp -o output.exe -lm && ./output.exe 

@@ -3,14 +3,27 @@
 
 using namespace std;
 
+#define MIN_SIMPSON_PART 1500
 //Definindo um nome para a variável de ponto flutuante para
 //facilitar possíveis trocas de precisão de ponto flutuante
-typedef float fl;
+typedef long double fl;
 
+//FIXME: essa função, está com precisão de 10e-20, porém era para estar exata. É erro de ponto flutuante!
+fl simpson_3_8(fl a, fl b, int pot)
+{
+    fl I = 0; 
+    //TODO: calcular simpson para no mínimo 1000 partições
+    fl h = fl((b-a)/MIN_SIMPSON_PART);
+    for(int i=0; i<MIN_SIMPSON_PART; i+=3)
+    {
+        I += (fl(3*h)/fl(8.0)) * (powl(a + i*h, pot) + 3*powl(a + (i+1)*h, pot) + 3*powl(a + (i+2)*h, pot) + powl(a +(i+3)*h, pot));
+    }
+    return I;
+}
 int main()
 {
     //TODO: Definir o domínio de integração
-    int a, b;
+    fl a, b;
     cout<<"Definir domínio de integração [a,b]: ";
     cin>>a>>b;
 
@@ -43,7 +56,17 @@ int main()
         cout<<w0[i]<<" ";
     }*/
 
+    cout.precision(12);
+
+    //TODO: criar vetor com integrais de x^i para criar um sistema linear bitelo
+    fl *g = new fl[2*N]; //g = vetor de integrais de x^i
+    for(int i=0; i<2*N; i++)
+    {
+        g[i] = simpson_3_8(a, b, i);
+        cout<<g[i]<<" ";
+    }
+
     //TODO: Montar matriz Jacobiana formada pela derivada da função f(w,t) (descrito no roteiro)
+    
     //TODO: Escolher uma tolerancia na ordem de 10e-8 ou menos!
-    cout<<"hello world"<<endl;
 }
