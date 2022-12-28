@@ -30,12 +30,18 @@ int main()
         w0[N-1-i] = w0[i];
         t0[N-1-i] = (a+b) - t0[i];
     }
+    
+    if(N%2 == 1)
+    {
+        t0[N/2] = (a+b)/fl(2); 
+        w0[N/2] =  fl((b-a)*(N/fl(2)))/fl(2*N); //FIXME: esse valor está correto?
+    }
 
     //!para debuging
-    /*for(int i =0; i < N;i++)
+    /* for(int i =0; i < N;i++)
     {
-        cout<<t0[i]<<" ";
-    } */
+        cout<<w0[i]<<" ";
+    }*/
 
     //TODO: Montar matriz Jacobiana formada pela derivada da função f(w,t) (descrito no roteiro)
     //TODO: Escolher uma tolerancia na ordem de 10e-8 ou menos!
