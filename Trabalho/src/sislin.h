@@ -190,3 +190,68 @@ vector<flu> decomposicao_LU(flu** M, flu* B, int ordem)
     }
     return x;
 }
+
+// Método de Gauss sem pivoteamento
+Vector gauss(flu** A, flu* B, int n)
+{
+    Vector solucao(n, 0.0);
+
+    A = matriz_aumentada(A, B, n);
+
+    // Substituição progressiva
+    for (int i = 0; i < n; i++)
+    {
+        if (A[i][i] == 0.0)
+        {
+            std::cout << "Divisao por zero detectada!" << endl;
+            exit(1);
+        }
+
+        for (int j = i + 1; j < n; j++)
+        {
+            double razao = ((double)A[j][i] / (double)A[i][i]);
+
+            for (int k = 0; k < n + 1; k++)
+            {
+                A[j][k] = (double)(A[j][k] - razao * A[i][k]);
+            }
+        }
+    }
+
+    // Substituição regressiva
+    solucao[n - 1] = (double)(A[n - 1][n] / (double)A[n - 1][n - 1]);
+
+    for (int i = n - 2; i >= 0; i--)
+    {
+        solucao[i] = A[i][n];
+
+        for (int j = i + 1; j < n; j++)
+        {
+            solucao[i] = (double)(solucao[i] - A[i][j] * solucao[j]);
+        }
+
+        solucao[i] = ((double)solucao[i] / (double)A[i][i]);
+    }
+
+    return solucao;
+}
+
+void printVector(flu* a, int n)
+{
+    for(int i =0; i<n; i++)
+    {
+        cout<<a[i]<<endl;
+    }
+}
+
+void printMatrix(flu**a, int n)
+{
+    for(int i=0; i<n; i++)
+    {
+        for(int j=0 ; j<n; j++)
+        {
+            cout<<a[j][i]<<";";
+        }
+        cout<<endl;
+    }
+}
