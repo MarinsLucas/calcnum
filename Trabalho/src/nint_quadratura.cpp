@@ -4,9 +4,8 @@
 
 using namespace std;
 
-#define MIN_SIMPSON_PART 10000
+#define MIN_SIMPSON_PART 1000
 #define debug std::cout
-#define epslon 0.1;
 
 // Definindo um nome para a variável de ponto flutuante para
 // facilitar possíveis trocas de precisão de ponto flutuante
@@ -14,6 +13,7 @@ typedef long double flu;
 
 // variáveis globais
 int N;
+flu epslon = 1e-8; 
 
 // FIXME: essa função, está com precisão de 10e-20, porém era para estar exata. É erro de ponto flutuante!
 flu simpson_3_8(flu a, flu b, int pot)
@@ -32,9 +32,9 @@ flu simpson_3_8(flu a, flu b, int pot)
 }
 
 //TODO: fazer integral exata
-flu integralexata(flu w, flu t, int pot)
+flu integralexata( flu min, flu max, int pot)
 {
-    return w*pow(t, pot+1)/(pot+1);
+    return pow(max, pot+1)/(pot+1) - pow(min, pot+1)/(pot+1);
 }
 
 #pragma region Funções de cálculo de F
@@ -80,8 +80,7 @@ flu* f3(flu *w, flu *t, flu *g, int k)
         {
             if(i == k)
             {
-                flu aux = t[i] + epslon;
-                f[j] = w[i] + pow(aux, j);
+                f[j] += w[i] * pow(t[i] + epslon, j);
             }
             else
             {
@@ -103,9 +102,7 @@ flu* f2(flu *w, flu *t, flu *g, int k)
         {
             if(i == k)
             {
-                f[j] += w[i];
-                f[j] += epslon;
-                f[j] *= pow(t[i], j);
+                f[j] += (w[i]+epslon)*pow(t[i], j);
             }
             else
             {
@@ -122,45 +119,39 @@ flu* f2(flu *w, flu *t, flu *g, int k)
 flu **Jacobiana(flu* w, flu* t, flu* g)
 {
     flu** jaco = new flu*[2*N];
-    for (int j = 0; j < 2 * N; j++)
+    for(int j =0 ; j< 2*N; j++)
     {
         jaco[j] = new flu[2*N];
-        //percorre as colunas
-        for(int i = 0; i < N; i++)
+        for(int i = 0; i<N; i++)
         {
-            //soma-se epslon na iesima posição de w
-            jaco[j][i] = ((f2(w, t, g, i)[j] - f(w, t, g)[j]))/epslon;
+            jaco[j][i] = f2(w, t, g, i)[j]/epslon - f(w, t, g)[j]/epslon;
         }
-        for(int i = N; i<2*N ;i++)
+        for(int i = N; i<2*N; i++)
         {
-            //soma-se epslon na iesima posição de t
-            jaco[j][i] = ((f3(w, t, g, i-N)[j] - f(w, t, g)[j]))/epslon; 
+            jaco[j][i] = f3(w,t,g,i-N)[j]/epslon - f(w, t, g)[j]/epslon;
         }
     }
-    printMatrix(jaco, 2*N);
     return jaco;
 }
 
 //! resolução de sistema linear pelo método de newton
 void newtonSisNLin(flu *w, flu *t, flu *g) // J é a matriz jacobiana, e f é o sistema de funções não lineares
 {
-    int kmax = 5;  //TODO: Definir tolerancia como 1e-8
-    flu** j; 
+    int kmax = 1000;  //TODO: Definir tolerancia como 1e-8
+    flu** j = new flu*[2*N]; 
     flu* fntion;
-    vector<flu> solution;
+    vector<flu> solution(2*N);
     // Processo iterativo:
     for (int k = 0; k < kmax; k++)
     {
         fntion = f4(w, t, g);
-        //printVector(f(w, t, g), 2*N);
         j = Jacobiana(w, t, g);
-    
-        solution = gauss_pivoteamento(j, fntion, 2*N);
+        solution = gauss(j, fntion, 2*N);
 
         for(int i = 0; i<N; i++)
         {
-            w[i] += solution[i];
-            t[i] += solution[i]; 
+            w[i] = w[i] + solution[i];
+            t[i] = t[i] + solution[N+i]; 
         } 
     }
     debug<<"resultado w: "<<endl;
@@ -202,9 +193,10 @@ int main()
     flu *g = new flu[2 * N]; // g = vetor de integrais de x^i
     for (int i = 0; i < 2 * N; i++)
     {
-        g[i] = simpson_3_8(a, b, i);
+        //g[i] = simpson_3_8(a, b, i);
+        g[i] = integralexata(a, b, i);
     }
-    //printVector(g, 2*N);
+
     //! Montar matriz Jacobiana formada pela derivada da função f(w,t) (descrito no roteiro)
     newtonSisNLin(w0, t0, g);
 }
