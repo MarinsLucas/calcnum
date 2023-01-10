@@ -3,6 +3,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pprint
 
 def calcErro(exata, aprox):
     return max(abs(exata - aprox))
@@ -42,12 +43,16 @@ def eraseData():
 
 def main():
     #dados do enunciado 
-    T0 = np.float128(99)   #temperatura inicial
-    k = np.float128(0.0358)  #coeficiente de transferência de calor 
-    T_m = np.float128(27)  #temperatura final
-    t_ini = np.float128(0) #tempo inicial
-    t_end = np.float128(50) #tempo final
+    T0 = np.float16(99)   #temperatura inicial
+    k = np.float16(0.0358)  #coeficiente de transferência de calor 
+    T_m = np.float16(27)  #temperatura final
+    t_ini = np.float16(0) #tempo inicial
+    t_end = np.float16(50) #tempo final
     ref = 5
+    vPoints = []
+    erroExp = []
+    erroImp = []
+    erroCN = []
     
     erroEe = []
     erroEi = []
@@ -56,7 +61,8 @@ def main():
     eraseData()
 
     for it in range(0, ref):
-        npoints = 3**(it+1)+1
+        npoints = 4**(it+1)
+        vPoints.append(npoints)
 
         t = np.float128(np.linspace(t_ini, t_end, npoints))
         dt = (t_end-t_ini)/(npoints-1)
@@ -77,21 +83,22 @@ def main():
         plt.plot(t, T, '-^')
         erroCn.append(calcErro(((T0 - T_m)*np.exp(-k*t)  + T_m), T))
 
+
         tt = np.linspace(t_ini, t_end, 200)
-        plt.plot(tt, ((T0 - T_m)*np.exp(-k*tt)) + T_m, '--')
+        # plt.plot(tt, ((T0 - T_m)*np.exp(-k*tt)) + T_m, '--')
         
-        print("Delta Time " + str(dt))
+        #print("Delta Time " + str(dt))
 
-        plt.legend(['Euler Explícito', 'Euler Implícito',
-                'Crank-Nicolson', 'Exato'])
+        """ plt.legend(['Euler Explícito', 'Euler Implícito',
+                'Crank-Nicolson', 'Exato']) """
 
-        plt.xlabel('tempo (s)')
+        """ plt.xlabel('tempo (s)')
         plt.ylabel('temperatura (C)')
         plt.title('Resfriamento de Newton')
         plt.grid()
-        plt.show()
+        plt.show() """
 
-        writeData(t, ((T0 - T_m)*np.exp(-k*t)  + T_m)  , cooling(T0, k, T_m, dt, npoints, 1),\
+        writeData(t, exata, cooling(T0, k, T_m, dt, npoints, 1),\
              cooling(T0, k, T_m, dt, npoints, 2), cooling(T0, k, T_m, dt, npoints, 3))
     plt.plot(-np.log(dtt),np.log(erroEe), '-*')
     plt.plot(-np.log(dtt),np.log(erroEi),'-o')
