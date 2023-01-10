@@ -28,20 +28,7 @@ def troca_linha(A, i, j, n):
         A[i][k] = A[j][k]
         A[j][k] = temp
 
-
-def normaMaximo(x):
-    size = len(x)
-    maximo = abs(x[0])
-
-    for i in range(size):
-        temp = abs(x[i])
-        if (temp > maximo):
-            maximo = temp
-
-    return maximo
-
-
-def distanciaMaximo(x1, x2):
+""" def distanciaMaximo(x1, x2):
     if (len(x1) != len(x2)):
         print("O tamanho dos vetores x1 e x2 precisa ser o mesmo")
         return 0
@@ -54,11 +41,11 @@ def distanciaMaximo(x1, x2):
         if (temp > dist):
             dist = temp
 
-    return dist
+    return dist """
 
 
 def calculaErro(x_prox, x_atual):
-    return distanciaMaximo(x_prox, x_atual) / normaMaximo(x_prox)
+    return np.max(np.abs(x_prox + np.multiply(x_atual,-1.0)))/np.max(np.array(x_prox))
 
 
 def substituicao_regressiva(M, B, n):
@@ -144,7 +131,7 @@ def matriz_aumentada(A, B, n):
     for i in range(n):
         for j in range(n):
             M[i][j] = A[i][j]
-
+    
     for i in range(n):
         M[i][n] = B[i]
 
@@ -159,11 +146,8 @@ def decompoeLU(M, n):
     U = np.zeros((n, n), dtype=np.float128)
 
     #print(type(M[0]))
-
-    for j in range(ordem):
-        U[0][j] = M[0][j]
-    for i in range(ordem):
-        L[i][0] = M[i][0] / U[0][0]
+    U[0][0:ordem] = M[0][0:ordem]
+    L[0:ordem][0] = M[0:ordem][0] / U[0][0]
 
     for i in range(ordem):
         #Calcula L
@@ -217,10 +201,9 @@ def decomposicao_LU(M, B, n):
         x[i] = soma / U[i][i]
     return x
 
-
+#FIXME: NÃO SEI SE ESTÁ FUNCIONANDO, NÃO CONSEGUI
 def erro(A, B, x, n):
     X = np.zeros(n)
-
     for i in range(n):
         for j in range(n):
             X[i] = abs(A[i][j] * x[i] - B[i])
@@ -228,15 +211,7 @@ def erro(A, B, x, n):
 
 
 def maxNorma(A, B, x, n):
-    max = 0
-
-    for i in range(n):
-        for j in range(n):
-            temp = abs(A[i][j] * x[i] - B[i])
-            if (temp > max):
-                max = temp
-
-    return max
+    return np.max(np.abs(np.dot(A, x) - B))
 
 
 # Fim de funções auxiliares
@@ -351,10 +326,7 @@ def gauss_seidel(M, B, u, E, max_iteracoes):
 
     ordem = len(M[0])
     X = list(u)
-    Xerro = list(u)  #vetor pra calcular o erro
-    passos = 0
-
-    print("ordem da matriz", ordem)
+    #Xerro = list(u)  #vetor pra calcular o erro relativo
 
     for k in range(max_iteracoes):
 
@@ -376,17 +348,17 @@ def gauss_seidel(M, B, u, E, max_iteracoes):
             print("Gauss-Seidel fez " + str(k) + " iteracoes...")
 
         #se atingir o criterio de parada, interrompe e retorna os resultados
-        erro = calculaErro(X, Xerro)
+        #erro = calculaErro(X, Xerro) #erro relativo 
+        erro = maxNorma(M,B,X,ordem) #erro absoluto
 
         if (erro < E):
             print("Terminou Gauss Seidel com erro de: ", erro)
+            print("Fazendo ", k, "iterações")
             return X
-        Xerro = list(X)
 
-    print("Terminou Gauss Seidel com erro de: ", erro)
-    print(
-        "Gauss Seidel nao convergiu ou precisa de mais iteracoes para convergir"
-    )
+        #Xerro = list(X)
+
+    print("Gauss Seidel nao convergiu ou precisa de mais iteracoes para convergir")
     return X
 
 
@@ -394,9 +366,8 @@ def gauss_seidel(M, B, u, E, max_iteracoes):
 def jacobi(M, B, u, E, max_iteracoes):
 
     ordem = len(M[0])
-    X = list(u)
-    Xerro = list(u)  #vetor pra calcular o erro
-    passos = 0
+    X = u
+    Xerro = u  #vetor pra calcular o erro
 
     print("ordem da matriz", ordem)
 
@@ -408,7 +379,6 @@ def jacobi(M, B, u, E, max_iteracoes):
             soma = B[i]
             div = 0
             for j in range(ordem):
-                passos += 1
                 #separa o divisor
                 if (i == j):
                     div = M[i][j]
@@ -418,16 +388,16 @@ def jacobi(M, B, u, E, max_iteracoes):
             X[i] = soma / div
 
         if (k % 100 == 0):
-            print("Jacobi fez " + str(k) + " iteracoes...")
+            print("Jacobi fez " + str(k) + " iteracoes...") 
 
         #se atingir o criterio de parada, interrompe e retorna os resultados
-        erro = calculaErro(X, Xerro)
-
+        #erro = calculaErro(X, Xerro) #Erro relativo!
+        erro = maxNorma(M, B, X, ordem) #erro absoluto
+        
         if (erro < E):
             print("Terminou Jacobi com erro de: ", erro)
+            print("Depois de ter feito " ,k, "iterações")
             return X
-
-        Xerro = list(X)
 
     print("Jacobi nao convergiu ou precisa de mais iteracoes para convergir")
     return X
@@ -487,19 +457,19 @@ def main():
         end = time.time()
     elif x == 5:
         start = time.time()
-        solucao = gauss_seidel(A, B, [0.0] * n, 0.01, 1000)
+        solucao = gauss_seidel(A, B, [0.0] * n, 10e-8, 2212)
         end = time.time()
     elif x == 6:
         start = time.time()
-        solucao = jacobi(A, B, [0.0] * n, 0.01, 1000)
+        solucao = jacobi(A, B, [0.0] * n, 10e-8, 2212)
         end = time.time()
     else:
         print("valor de método incorreto")
         sys.exit(1)
 
-    #xs = np.arange(0, n, 1)
-    #plt.plot(xs, solucao, 'b')
-    #plt.show()
+    xs = np.arange(0, n, 1)
+    plt.plot(xs, solucao, 'b')
+    plt.show()
 
     print('\nErro: ' + str(maxNorma(A, B, solucao, n)))
     print('\nElapsed Time ' + str(end - start))

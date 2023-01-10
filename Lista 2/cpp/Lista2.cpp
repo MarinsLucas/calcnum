@@ -35,6 +35,31 @@ void imprimeVetor(Vector A){
     cout << endl;
 }
 
+void DrawGraphic(Vector solucao, int n)
+{
+    RGBABitmapImageReference *imageReference = CreateRGBABitmapImageReference();
+    StringReference *errorMessage = CreateStringReferenceLengthValue(0, L' ');
+    Vector xs; 
+    for(int i =0; i<n; i++)
+    {
+        xs.push_back(i);
+    }
+    bool success = DrawScatterPlot(imageReference, 1080, 720, &xs,&solucao, errorMessage);
+    if(success){
+		vector<double> *pngdata = ConvertToPNG(imageReference->image);
+		WriteToFile(pngdata, "example1.png");
+		DeleteImage(imageReference->image);
+	}else{
+		cerr << "Error: ";
+		for(wchar_t c : *errorMessage->string){
+			wcerr << c;
+		}
+		cerr << endl;
+	}
+
+	FreeAllocations();
+}
+
 void imprimeMatriz(Matrix A)
 {
     for (int i = 0; i < A.size(); i++)
@@ -445,7 +470,7 @@ Vector gauss_pivoteamento(Matrix A, Vector B, int n)
             }
         }
 
-        if (!A[k][i_max])
+        if (A[k][i_max] == 0)
         { // Se o pivô for zero
             std::cout << "Divisao por zero detectada!" << endl;
             exit(1);
@@ -644,9 +669,6 @@ int main()
     Vector solucao(n, 0.0);
     std::chrono::_V2::system_clock::time_point start, end;
 
-
-    for (int x = 1; x < 7; x++)
-    {
         if (questao == 1)
         {
             for (int i = 0; i < n; i++)
@@ -760,33 +782,16 @@ int main()
     
     auto diff = chrono::duration_cast<chrono::microseconds>(end - start).count();
     double seconds = diff / 1e6;
-
+    DrawGraphic(solucao, n);   
+    
     std::cout << "\nErro: " << maxNorma(A, B, solucao, n) << endl;
     std::cout << "\nTempo percorrido: " << seconds << " segundos" << endl;
     
-    RGBABitmapImageReference *imageReference = CreateRGBABitmapImageReference();
-    StringReference *errorMessage = CreateStringReferenceLengthValue(0, L' ');
-    Vector xs; 
-    for(int i =0; i<n; i++)
-    {
-        xs.push_back(i);
-    }
-    bool success = DrawScatterPlot(imageReference, 1080, 720, &xs,&solucao, errorMessage);
-    if(success){
-		vector<double> *pngdata = ConvertToPNG(imageReference->image);
-		WriteToFile(pngdata, "example1.png");
-		DeleteImage(imageReference->image);
-	}else{
-		cerr << "Error: ";
-		for(wchar_t c : *errorMessage->string){
-			wcerr << c;
-		}
-		cerr << endl;
-	}
 
-	FreeAllocations();
-    }
+    
 
     
     return 0;
 }
+
+

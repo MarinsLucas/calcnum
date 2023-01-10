@@ -8,11 +8,12 @@ def create_matrix(n):
     for i in range(n):
         for j in range(n):
             A[i][j] = 1.0 / (float)(i + j + 1)
-
     return A
 
+def calculateDet(A):
+    return np.linalg.det(A)
 
-def main():
+""" def main():
     arr = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], dtype=int)
     n = 10
     det_n = np.zeros(n, dtype=float)
@@ -52,7 +53,15 @@ def main():
     plt.xlabel('Valores de N')
     plt.ylabel('Decrescimento da matriz NxN')
     plt.title('Relação de derescimento do determinante da matriz NxN')
-    plt.show()
+    plt.show() """
+
+def main():
+    for i in range(1000):
+        A = create_matrix(i)
+        if(calculateDet(A) <= 0): 
+            print("Cholesky falhou com n = " + str(i))
+            print(calculateDet(A))
+            return
 
 
 if __name__ == '__main__':

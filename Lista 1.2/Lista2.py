@@ -7,6 +7,7 @@ from cmath import sqrt
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import numpy as np
+import pprint
 
 def eraseData():
     f = open("datafile.csv", "w")
@@ -14,7 +15,7 @@ def eraseData():
     f.close()
 
 def writeData(x, exata, listaSolucoes, todosErros):
-    f = open("float128.csv", "a")
+    f = open("float64.csv", "a")
     f.write("novoteste;novoteste;novoteste;novoteste;novoteste;novoteste\n")
     f.write("TEMPO;EXATA;0.1;0.01;0.001;0.0001\n")
     for i in range(0, len(listaSolucoes[0])):
@@ -92,6 +93,9 @@ def difFinita(epslon, h, npart, it):
     solExata = []
     todosErros = []
     listaSolucoes = []
+
+    errosTaxaConvergencia = []
+    dhTaxaConvergencia = []
     
     for b in range(4):
 
@@ -113,14 +117,14 @@ def difFinita(epslon, h, npart, it):
         
         particoes_exata = 100
         
-        he = np.float128(1/float(particoes_exata-1))
+        he = np.float64(1/float(particoes_exata-1))
         for i in range(particoes_exata):
-            dhe = np.float128(he * i)
+            dhe = np.float64(he * i)
             tempoExata.append(dhe)
             solExata.append(F(dhe, epslon[b]))
 
         for i in range(npart + 1):
-            dh = np.float128(h * i)
+            dh = np.float64(h * i)
             tempo.append(dh)
         
         solApprox = Tomas(diagonalInferior, diagonalPrincipal, diagonalSuperior, termoIndependente)
@@ -130,16 +134,17 @@ def difFinita(epslon, h, npart, it):
         listaSolucoes.append(solApprox)
 
         partErro = len(solApprox)
-        hErro = np.float128(1/float(partErro-1))
+        hErro = np.float64(1/float(partErro-1))
         solExataErro = []
         
         for i in range (partErro):
-            dh = np.float128(hErro * i)
+            dh = np.float64(hErro * i)
             solExataErro.append(F(dh, epslon[b]))
              
         erroNormaMax = calculaErro(solExataErro, solApprox)
         print("Erro Norma Max: ", repr(erroNormaMax))
-        
+        errosTaxaConvergencia.append(erroNormaMax)
+        dhTaxaConvergencia.append(partErro)
         erro = []
         for j in range(len(solExataErro)):
             erro.append(abs(solExataErro[j] - solApprox[j]))
@@ -172,12 +177,59 @@ def difFinita(epslon, h, npart, it):
     
     writeData(tempo, solExataErro, listaSolucoes, todosErros)
 
+    return dhTaxaConvergencia, errosTaxaConvergencia
+
 def main(): 
     eraseData()
-    e = [np.float128(0.1) , np.float128(0.01), np.float128(0.001), np.float128(0.0001)]
+    e = [np.float64(0.1) , np.float64(0.01), np.float64(0.001), np.float64(0.0001)]
     h = 4
+    dhs = []
+    erros = []
+    erros1 = [] #cada um vai receber os erros referentes ao calculo com um dos epslons
+    erros2 = []
+    erros3 = []
+    erros4 = []
+    dh1 = []
+    dh2 = []
+    dh3 =[]
+    dh4 = []
     for i in range(1,6):
-        difFinita(e, np.float128(1/h**i), h**i, i)
+        dh, eTc = difFinita(e, np.float64(1/h**i), h**i, i)
+        dhs.append(dh)
+        erros.append(eTc)
+        
+    for i in range(4, -1, -1):
+        erros1.append(erros[i][0])
+        erros2.append(erros[i][1])
+        erros3.append(erros[i][2])
+        erros4.append(erros[i][3])
+        dh1.append(dhs[i][0])
+        dh2.append(dhs[i][1])
+        dh3.append(dhs[i][2])
+        dh4.append(dhs[i][3])
+
+    pprint.pprint(erros1)
+    pprint.pprint(np.log10(erros1))
+
+    plt.plot(-np.log10(dh1), np.log10(erros1), '-*')
+    plt.plot(-np.log10(dh2), np.log10(erros2), '--')
+    plt.plot(-np.log10(dh3), np.log10(erros3), '-^')
+    plt.plot(-np.log10(dh4), np.log10(erros4), '-o')
+    plt.legend(['e = 0.1', 'e = 0.01', 'e = 0.001', 'e = 0.0001'])
+    plt.xlabel('-log(Delta t)')
+    plt.ylabel('log(erro)')
+    plt.show() 
+
+    print("Taxas de convergência:")
+    print("e = 0.1 " + str((np.log(erros1[-1])-np.log(erros1[0]))/(np.log(dh1[-1])-np.log(dh1[0]))))
+    print("e = 0.01 " + str((np.log(erros2[-1])-np.log(erros2[0]))/(np.log(dh2[-1])-np.log(dh2[0]))))
+    print("e = 0.001 " + str((np.log(erros3[-1])-np.log(erros3[0]))/(np.log(dh3[-1])-np.log(dh3[0]))))
+    print("e = 0.0001 " + str((np.log(erros4[-1])-np.log(erros4[0]))/(np.log(dh4[-1])-np.log(dh4[0]))))
+    #erros[0] -> todos os valores de erro máximo da primeira iteração
+    #precisamos: erros[0] -> os valores para epsilon 0.1 de todas iterações
+            #vetor = todos erros[0]
+            #outro = todos erros[1]
+
 
 main()
 
