@@ -4,8 +4,10 @@
 
 using namespace std;
 
-#define MIN_SIMPSON_PART 1000
+#define MIN_SIMPSON_PART 1500
 #define debug std::cout
+#define epslon 1e-8
+#define TOL 1e-8
 
 // Definindo um nome para a variável de ponto flutuante para
 // facilitar possíveis trocas de precisão de ponto flutuante
@@ -13,9 +15,7 @@ typedef long double flu;
 
 // variáveis globais
 int N;
-flu epslon = 1e-8; 
 
-// FIXME: essa função, está com precisão de 10e-20, porém era para estar exata. É erro de ponto flutuante!
 flu simpson_3_8(flu a, flu b, int pot)
 {
     flu I = 0;
@@ -24,20 +24,16 @@ flu simpson_3_8(flu a, flu b, int pot)
     {
         I += (flu(3 * h) / flu(8.0)) * (powl(a + i * h, pot) + 3 * powl(a + (i + 1) * h, pot) + 3 * powl(a + (i + 2) * h, pot) + powl(a + (i + 3) * h, pot));
     }
-
-    //FIXME: TIRAR ESSE TREM QUANDO TIVER A EXATA
-    if(I>0 && I<1E-19)
-        I = 0; 
     return I;
 }
 
-//TODO: fazer integral exata
+
 flu integralexata( flu min, flu max, int pot)
 {
     return pow(max, pot+1)/(pot+1) - pow(min, pot+1)/(pot+1);
 }
 
-#pragma region Funções de cálculo de F
+#pragma region Funções de cálculo de F(w,t) 
 //! retorna um valor para f_j
 flu* f(flu *w, flu *t, flu *g)
 {
@@ -115,7 +111,20 @@ flu* f2(flu *w, flu *t, flu *g, int k)
 }
 #pragma endregion
 
-// FIXME: função que cria matriz jacobiana
+#pragma region Funções de cálculo de funções a serem calculadas pela Quadratura de Gauss
+
+flu e(flu a, flu b, flu x)
+{
+    return exp(a*x + b);
+}
+
+flu v(flu a, flu b, flu x)
+{
+    return sin(a*x+b)+cos(b*x+a); 
+}
+
+#pragma endregion
+
 flu **Jacobiana(flu* w, flu* t, flu* g)
 {
     flu** jaco = new flu*[2*N];
@@ -137,12 +146,12 @@ flu **Jacobiana(flu* w, flu* t, flu* g)
 //! resolução de sistema linear pelo método de newton
 void newtonSisNLin(flu *w, flu *t, flu *g) // J é a matriz jacobiana, e f é o sistema de funções não lineares
 {
-    int kmax = 1000;  //TODO: Definir tolerancia como 1e-8
     flu** j = new flu*[2*N]; 
     flu* fntion;
     vector<flu> solution(2*N);
+    int k = 0;
     // Processo iterativo:
-    for (int k = 0; k < kmax; k++)
+    do
     {
         fntion = f4(w, t, g);
         j = Jacobiana(w, t, g);
@@ -153,11 +162,20 @@ void newtonSisNLin(flu *w, flu *t, flu *g) // J é a matriz jacobiana, e f é o 
             w[i] = w[i] + solution[i];
             t[i] = t[i] + solution[N+i]; 
         } 
+        k++;
+    }while(max(solution) > 1e-8); //! Condição de parada: erro máximo menor que 1e-8
+    
+    cout<<"Resultado obtido após "<<k<<" iterações"<<endl;
+}
+
+flu GaussianQuadrature(flu* w, flu* t, flu a, flu b)
+{
+    flu result = 0;
+    for(int i = 0; i<N; i++)
+    {
+        result += w[i]*v(a, b, t[i]);
     }
-    debug<<"resultado w: "<<endl;
-    printVector(w, N);
-    debug<<"resultado t: "<<endl;
-    printVector(t,N);
+    return result;
 }
 
 int main()
@@ -186,7 +204,7 @@ int main()
     if (N % 2 == 1)
     {
         t0[N / 2] = (a + b) / flu(2);
-        w0[N / 2] = flu((b - a) * (N / flu(2))) / flu(2 * N); // FIXME: esse valor está correto?
+        w0[N / 2] = flu((b - a) * (N / flu(2))) / flu(2 * N);
     }
 
     //! criar vetor com integrais de x^i para criar um sistema linear bitelo
@@ -199,4 +217,13 @@ int main()
 
     //! Montar matriz Jacobiana formada pela derivada da função f(w,t) (descrito no roteiro)
     newtonSisNLin(w0, t0, g);
+
+    writeResults(w0, t0, N);
+
+    cout.precision(32);
+    cout<<"Resultado da integração:"<<endl;
+    cout<<GaussianQuadrature(w0, t0, a, b)<<endl;
+
+    debug<<"Resultado da integração exata:"<<endl;
+    debug<<-cos(2) + 1 + sin(2)<<endl;
 }

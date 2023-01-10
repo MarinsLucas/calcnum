@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
@@ -173,4 +174,40 @@ void printMatrix(flu**a, int n)
         }
         cout<<endl;
     }
+}
+
+template <typename T>
+T max(vector<T> vet)
+{
+    T max = 0;
+    for (int i = 0; i < vet.size(); i++)
+    {
+        if (abs(vet[i]) > max)
+        {
+            max = abs(vet[i]);
+        }
+    }
+    return max;
+}
+
+//write a file with the results w and t
+void writeResults( flu* w, flu* t, int N)
+{
+    string filename = "results_" + to_string(N) + ".csv";
+    ofstream output;
+    output.open(filename);
+    output.precision(34);
+    if (!output.is_open())
+    {
+        cout << "Error opening file" << endl;
+        exit(1);
+    }
+
+    output<<N<<endl;
+    output << "w ; t" << endl;
+    for (int i = 0; i < N; i++)
+    {
+        output << w[i] << ";" << t[i]<<endl;
+    }
+    output.close();
 }
